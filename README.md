@@ -1,36 +1,161 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Smoke Purchasing Platform
 
-## Getting Started
+A web platform for managing smoke purchases with three roles: Super Admin, Distributor, and Supermarket.
 
-First, run the development server:
+## Features
+
+### Super Admin (Platform Owner)
+- Add new supermarkets after offline payment ($70 one-time)
+- Remove/deactivate supermarkets
+- Manage platform access
+
+### Distributor
+- Add/edit/delete smoke products
+- Manage incoming orders from supermarkets
+- Update order status (Pending → Shipped → Completed)
+
+### Supermarket (Customer)
+- Browse distributor catalog
+- Add items to cart and place orders
+- Track their own orders
+
+## Tech Stack
+
+- **Frontend & Backend:** Next.js 14 (App Router)
+- **Database:** MySQL (configurable to PostgreSQL)
+- **ORM:** Prisma
+- **Auth:** NextAuth.js (role-based authentication)
+- **Styling:** Tailwind CSS
+
+## Setup Instructions
+
+### 1. Clone and Install Dependencies
+
+```bash
+git clone <your-repo-url>
+cd smoke-app
+npm install
+```
+
+### 2. Database Setup
+
+Create a `.env.local` file in the root directory:
+
+```env
+# Database
+DATABASE_URL="mysql://username:password@localhost:3306/smoke_app"
+
+# NextAuth.js
+NEXTAUTH_SECRET="your-secret-key-change-this-in-production"
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+### 3. Database Migration and Seeding
+
+```bash
+# Create and apply migrations
+npx prisma migrate dev --name init
+
+# Generate Prisma client
+npx prisma generate
+
+# Seed the database with sample data
+npx prisma db seed
+```
+
+### 4. Run the Application
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Default Login Credentials
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+After seeding the database, you can use these credentials:
 
-## Learn More
+- **Super Admin:** admin@smokeapp.com / admin123
+- **Distributor:** distributor@smokeapp.com / distributor123  
+- **Supermarket:** supermarket@smokeapp.com / supermarket123
 
-To learn more about Next.js, take a look at the following resources:
+## Database Schema
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The application uses the following main models:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **User:** Authentication and role management
+- **Supermarket:** Customer organizations
+- **Product:** Items managed by distributors
+- **Order:** Purchase orders from supermarkets
+- **OrderItem:** Individual items within orders
 
-## Deploy on Vercel
+## Routes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `/` - Home (redirects based on role)
+- `/login` - Login page (all roles)
+- `/admin/supermarkets` - Manage supermarkets (Super Admin only)
+- `/distributor/products` - CRUD products (Distributor only)
+- `/distributor/orders` - Manage orders (Distributor only)
+- `/products` - Browse products (Supermarket only)
+- `/cart` - Checkout & place order (Supermarket only)
+- `/orders` - Order history (Supermarket only)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment
+
+### Vercel Deployment
+
+1. Push your code to GitHub
+2. Connect your GitHub repo to Vercel
+3. Set environment variables in Vercel dashboard
+4. Deploy
+
+### Database Hosting Options
+
+- **PlanetScale** (MySQL)
+- **Railway** (MySQL/PostgreSQL)
+- **Supabase** (PostgreSQL)
+- **AWS RDS**
+
+## Environment Variables
+
+Required environment variables:
+
+```env
+DATABASE_URL="your-database-connection-string"
+NEXTAUTH_SECRET="your-nextauth-secret-key"
+NEXTAUTH_URL="http://localhost:3000" # or your production URL
+```
+
+## Development
+
+### Adding New Features
+
+1. Update Prisma schema if needed (`prisma/schema.prisma`)
+2. Run `npx prisma migrate dev` to apply changes
+3. Update API routes in `src/app/api/`
+4. Update frontend components in `src/app/`
+
+### Database Management
+
+```bash
+# View database in browser
+npx prisma studio
+
+# Reset database
+npx prisma migrate reset
+
+# Deploy migrations to production
+npx prisma migrate deploy
+```
+
+## Security Notes
+
+- Change default passwords in production
+- Use strong `NEXTAUTH_SECRET` in production
+- Implement proper input validation
+- Add rate limiting for API routes
+- Use HTTPS in production
+
+## License
+
+MIT License

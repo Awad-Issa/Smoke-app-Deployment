@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String       @id @default(cuid())
+  email         String       @unique
+  password      String
+  role          Role
+  supermarket   Supermarket? @relation(fields: [supermarketId], references: [id])
+  supermarketId String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@map("users")
+}
+
+model Supermarket {
+  id        String   @id @default(cuid())
+  name      String
+  status    Status   @default(PENDING)
+  users     User[]
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("supermarkets")
+}
+
+model SupermarketRequest {
+  id              String        @id @default(cuid())
+  supermarketName String
+  contactEmail    String
+  contactPhone    String?
+  address         String?
+  businessLicense String?       // Optional business license number
+  status          RequestStatus @default(PENDING)
+  notes           String?       // Admin notes
+  requestedAt     DateTime      @default(now())
+  reviewedAt      DateTime?
+  reviewedBy      String?       // Admin user ID who reviewed
+
+  @@map("supermarket_requests")
+}
+
+model Product {
+  id            String      @id @default(cuid())
+  distributorId String
+  name          String
+  price         Float
+  stock         Int
+  description   String?
+  image         String?     // URL or path to product image
+  orderItems    OrderItem[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@map("products")
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  supermarketId String
+  distributorId String
+  status        OrderStatus @default(PENDING)
+  total         Float       @default(0)
+  items         OrderItem[]
+  supermarket   Supermarket @relation(fields: [supermarketId], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+enum Role {
+  SUPER_ADMIN
+  DISTRIBUTOR
+  SUPERMARKET
+}
+
+enum Status {
+  PENDING
+  ACTIVE
+  INACTIVE
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum OrderStatus {
+  PENDING
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
