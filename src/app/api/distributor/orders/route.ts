@@ -35,8 +35,18 @@ export async function GET() {
             id: true,
             name: true
           }
-        },
-        items: {
+        }
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    })
+
+    // Fetch order items separately to handle deleted products
+    const ordersWithItems = await Promise.all(
+      orders.map(async (order) => {
+        const items = await prisma.orderItem.findMany({
+          where: { orderId: order.id },
           include: {
             product: {
               select: {
@@ -45,14 +55,15 @@ export async function GET() {
               }
             }
           }
+        })
+        return {
+          ...order,
+          items
         }
-      },
-      orderBy: {
-        createdAt: "desc"
-      }
-    })
+      })
+    )
 
-    return NextResponse.json(orders)
+    return NextResponse.json(ordersWithItems)
   } catch (error) {
     console.error("Error fetching orders:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

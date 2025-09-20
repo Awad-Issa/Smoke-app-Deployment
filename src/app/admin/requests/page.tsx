@@ -38,9 +38,24 @@ export default function AdminRequestsPage() {
     try {
       const response = await fetch("/api/admin/supermarket-requests")
       const data = await response.json()
-      setRequests(data)
+      
+      // Handle errors
+      if (!response.ok || data.error) {
+        console.error("API Error:", data.error || "Failed to fetch requests")
+        setRequests([]) // Set empty array instead of error object
+        return
+      }
+      
+      // Ensure data is an array
+      if (Array.isArray(data)) {
+        setRequests(data)
+      } else {
+        console.error("Invalid data format - expected array, got:", typeof data)
+        setRequests([])
+      }
     } catch (error) {
       console.error("Error fetching requests:", error)
+      setRequests([]) // Set empty array on error
     } finally {
       setLoading(false)
     }

@@ -2,7 +2,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
 interface Supermarket {
@@ -16,6 +16,22 @@ interface Supermarket {
   }
 }
 
+interface SupermarketCredentials {
+  supermarket: {
+    id: string
+    name: string
+    status: string
+    createdAt: string
+  }
+  user: {
+    email: string
+    createdAt: string
+    lastUpdated: string
+  }
+  hasAccount: boolean
+  note: string
+}
+
 export default function SupermarketsPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -23,10 +39,34 @@ export default function SupermarketsPage() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [newSupermarketName, setNewSupermarketName] = useState("")
   const [loading, setLoading] = useState(true)
-  const [showActivationModal, setShowActivationModal] = useState(false)
-  const [selectedSupermarket, setSelectedSupermarket] = useState<Supermarket | null>(null)
-  const [activationEmail, setActivationEmail] = useState("")
   const [generatedCredentials, setGeneratedCredentials] = useState<{email: string, password: string} | null>(null)
+  const [showNewCredentialsModal, setShowNewCredentialsModal] = useState(false)
+  const [credentialsModalTitle, setCredentialsModalTitle] = useState("Supermarket Created Successfully!")
+  
+  // Credentials viewing state
+  const [showCredentialsModal, setShowCredentialsModal] = useState(false)
+  const [selectedSupermarketForCredentials, setSelectedSupermarketForCredentials] = useState<Supermarket | null>(null)
+  const [credentialsData, setCredentialsData] = useState<SupermarketCredentials | null>(null)
+  const [loadingCredentials, setLoadingCredentials] = useState(false)
+  const [resettingPassword, setResettingPassword] = useState(false)
+  const [newPasswordGenerated, setNewPasswordGenerated] = useState<string | null>(null)
+  
+  // Copy to clipboard function
+  const copyToClipboard = async (text: string, type: 'email' | 'password') => {
+    try {
+      await navigator.clipboard.writeText(text)
+      alert(`✅ ${type.charAt(0).toUpperCase() + type.slice(1)} copied to clipboard!`)
+    } catch (error) {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      alert(`✅ ${type.charAt(0).toUpperCase() + type.slice(1)} copied to clipboard!`)
+    }
+  }
 
   useEffect(() => {
     if (status === "loading") return
@@ -41,9 +81,24 @@ export default function SupermarketsPage() {
     try {
       const response = await fetch("/api/admin/supermarkets")
       const data = await response.json()
-      setSupermarkets(data)
+      
+      // Handle errors
+      if (!response.ok || data.error) {
+        console.error("API Error:", data.error || "Failed to fetch supermarkets")
+        setSupermarkets([]) // Set empty array instead of error object
+        return
+      }
+      
+      // Ensure data is an array
+      if (Array.isArray(data)) {
+        setSupermarkets(data)
+      } else {
+        console.error("Invalid data format - expected array, got:", typeof data)
+        setSupermarkets([])
+      }
     } catch (error) {
       console.error("Error fetching supermarkets:", error)
+      setSupermarkets([]) // Set empty array on error
     } finally {
       setLoading(false)
     }
@@ -61,18 +116,41 @@ export default function SupermarketsPage() {
       })
 
       if (response.ok) {
+        const data = await response.json()
+        
+        // Show the auto-generated credentials to the admin
+        setGeneratedCredentials(data.credentials)
+        setCredentialsModalTitle("Supermarket Created Successfully!")
         setNewSupermarketName("")
         setShowAddForm(false)
+        setShowNewCredentialsModal(true)
+        
         fetchSupermarkets()
+      } else {
+        const error = await response.json()
+        alert(error.error || "Failed to create supermarket")
       }
     } catch (error) {
       console.error("Error adding supermarket:", error)
+      alert("Failed to create supermarket")
     }
   }
 
-  const toggleSupermarketStatus = async (id: string, currentStatus: string) => {
+  const toggleSupermarketStatus = async (id: string, currentStatus: string, supermarketName: string) => {
+    const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE"
+    const action = newStatus === "ACTIVE" ? "activate" : "deactivate"
+    
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      `Are you sure you want to ${action} "${supermarketName}"?\n\n` +
+      (newStatus === "INACTIVE" 
+        ? "⚠️ This will immediately log out their users and prevent them from logging in again!"
+        : "✅ This will allow their users to log in again.")
+    )
+
+    if (!confirmed) return
+
     try {
-      const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE"
       const response = await fetch(`/api/admin/supermarkets/${id}`, {
         method: "PATCH",
         headers: {
@@ -81,40 +159,48 @@ export default function SupermarketsPage() {
         body: JSON.stringify({ status: newStatus })
       })
 
+      const data = await response.json()
+
       if (response.ok) {
+        alert(`✅ ${data.message}\n💡 ${data.accountEffect}`)
         fetchSupermarkets()
+      } else {
+        alert(data.error || "Failed to update supermarket status")
       }
     } catch (error) {
       console.error("Error updating supermarket:", error)
+      alert("Failed to update supermarket status")
     }
   }
 
-  const handleActivateSupermarket = (supermarket: Supermarket) => {
-    setSelectedSupermarket(supermarket)
-    setShowActivationModal(true)
-    setActivationEmail("")
-    setGeneratedCredentials(null)
-  }
-
-  const activateSupermarket = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedSupermarket || !activationEmail.trim()) return
-
+  const handleActivateSupermarket = async (supermarket: Supermarket) => {
+    // Directly activate without showing modal since email is auto-generated
     try {
-      const response = await fetch(`/api/admin/supermarkets/${selectedSupermarket.id}/activate`, {
+      const response = await fetch(`/api/admin/supermarkets/${supermarket.id}/activate`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: activationEmail }),
       })
 
       const data = await response.json()
+      
+      console.log('🔍 Frontend received activation response:', data);
 
       if (response.ok) {
+        console.log('✅ Activation successful, credentials received:');
+        console.log('   📧 Email:', data.credentials?.email);
+        console.log('   🔐 Password:', data.credentials?.password);
+        console.log('   📝 Message:', data.message);
+        
+        // Show credentials in modal
         setGeneratedCredentials(data.credentials)
+        setCredentialsModalTitle(data.message.includes("reset") ? "Password Reset Successfully!" : "Account Activated Successfully!")
+        setShowNewCredentialsModal(true)
+        
         fetchSupermarkets()
       } else {
+        console.error('❌ Activation failed:', data);
         alert(data.error || "Failed to activate supermarket")
       }
     } catch (error) {
@@ -123,11 +209,81 @@ export default function SupermarketsPage() {
     }
   }
 
-  const closeActivationModal = () => {
-    setShowActivationModal(false)
-    setSelectedSupermarket(null)
-    setActivationEmail("")
+  // Function to view supermarket credentials
+  const handleViewCredentials = async (supermarket: Supermarket) => {
+    setSelectedSupermarketForCredentials(supermarket)
+    setShowCredentialsModal(true)
+    setLoadingCredentials(true)
+    setCredentialsData(null)
+
+    try {
+      const response = await fetch(`/api/admin/supermarkets/${supermarket.id}/credentials`)
+      const data = await response.json()
+
+      if (response.ok) {
+        setCredentialsData(data)
+      } else {
+        alert(data.error || "Failed to fetch credentials")
+        setShowCredentialsModal(false)
+      }
+    } catch (error) {
+      console.error("Error fetching credentials:", error)
+      alert("Failed to fetch credentials")
+      setShowCredentialsModal(false)
+    } finally {
+      setLoadingCredentials(false)
+    }
+  }
+
+  const closeCredentialsModal = () => {
+    setShowCredentialsModal(false)
+    setSelectedSupermarketForCredentials(null)
+    setCredentialsData(null)
+    setNewPasswordGenerated(null)
+  }
+
+  const closeNewCredentialsModal = () => {
+    setShowNewCredentialsModal(false)
     setGeneratedCredentials(null)
+  }
+
+  // Reset password function
+  const handleResetPassword = async (supermarketId: string) => {
+    setResettingPassword(true)
+    setNewPasswordGenerated(null)
+
+    try {
+      const response = await fetch(`/api/admin/supermarkets/${supermarketId}/activate`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      const data = await response.json()
+      
+      console.log('🔍 Frontend received password reset response:', data);
+
+      if (response.ok) {
+        console.log('✅ Password reset successful, new credentials:');
+        console.log('   📧 Email:', data.credentials?.email);
+        console.log('   🔐 New Password:', data.credentials?.password);
+        
+        setNewPasswordGenerated(data.credentials.password)
+        // Auto-copy the new password to clipboard for convenience
+        copyToClipboard(data.credentials.password, 'password')
+        // Refresh credentials data
+        handleViewCredentials(selectedSupermarketForCredentials!)
+      } else {
+        console.error('❌ Password reset failed:', data);
+        alert(data.error || "Failed to reset password")
+      }
+    } catch (error) {
+      console.error("Error resetting password:", error)
+      alert("Failed to reset password")
+    } finally {
+      setResettingPassword(false)
+    }
   }
 
   if (loading) {
@@ -137,13 +293,24 @@ export default function SupermarketsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-4">
         <h1 className="text-3xl font-bold">Supermarkets Management</h1>
+          <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+            👑 Admin: {session?.user?.email}
+          </span>
+        </div>
         <div className="space-x-2">
           <button
             onClick={() => setShowAddForm(true)}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
             Add Supermarket Directly
+          </button>
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center gap-2"
+          >
+            🚪 Logout
           </button>
         </div>
       </div>
@@ -201,6 +368,14 @@ export default function SupermarketsPage() {
       )}
 
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-blue-50 px-4 py-2 border-b border-blue-200">
+          <p className="text-sm text-blue-700">
+            💡 <strong>Tip:</strong> Click on any supermarket row to view detailed account information including:
+            <strong> login credentials, account statistics, order history, and activity tracking.</strong>
+            <br/>
+            <span className="text-xs">⚠️ Deactivating a supermarket will prevent their users from logging in.</span>
+          </p>
+        </div>
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
@@ -226,9 +401,21 @@ export default function SupermarketsPage() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {supermarkets.map((supermarket) => (
-              <tr key={supermarket.id}>
+              <tr 
+                key={supermarket.id} 
+                onClick={() => handleViewCredentials(supermarket)}
+                className="hover:bg-gray-50 cursor-pointer"
+                title="Click to view login credentials and account details"
+              >
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {supermarket.name}
+                  <div className="flex items-center gap-2">
+                    <span>{supermarket.name}</span>
+                    {supermarket._count.users === 0 && (
+                      <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">
+                        No account
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
@@ -239,8 +426,16 @@ export default function SupermarketsPage() {
                         ? "bg-yellow-100 text-yellow-800"
                         : "bg-red-100 text-red-800"
                     }`}
+                    title={
+                      supermarket.status === "INACTIVE" 
+                        ? "🚫 Login disabled - Users cannot access their account"
+                        : supermarket.status === "ACTIVE"
+                        ? "✅ Active - Users can log in normally"
+                        : "⏳ Pending activation"
+                    }
                   >
                     {supermarket.status}
+                    {supermarket.status === "INACTIVE" && " 🚫"}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -255,14 +450,20 @@ export default function SupermarketsPage() {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   {supermarket.status === "PENDING" ? (
                     <button
-                      onClick={() => handleActivateSupermarket(supermarket)}
+                      onClick={(e) => {
+                        e.stopPropagation() // Prevent row click
+                        handleActivateSupermarket(supermarket)
+                      }}
                       className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
                     >
                       Create Login
                     </button>
                   ) : (
                     <button
-                      onClick={() => toggleSupermarketStatus(supermarket.id, supermarket.status)}
+                      onClick={(e) => {
+                        e.stopPropagation() // Prevent row click
+                        toggleSupermarketStatus(supermarket.id, supermarket.status, supermarket.name)
+                      }}
                       className={`${
                         supermarket.status === "ACTIVE"
                           ? "text-red-600 hover:text-red-900"
@@ -279,84 +480,335 @@ export default function SupermarketsPage() {
         </table>
       </div>
 
-      {/* Activation Modal */}
-      {showActivationModal && selectedSupermarket && (
+      {/* Credentials Viewing Modal */}
+      {showCredentialsModal && selectedSupermarketForCredentials && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">
-              Activate {selectedSupermarket.name}
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800">
+                📋 {selectedSupermarketForCredentials.name} - Login Details
             </h2>
-            
-            {!generatedCredentials ? (
-              <form onSubmit={activateSupermarket}>
-                <div className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
-                    Email Address for Login *
-                  </label>
-                  <input
-                    type="email"
-                    value={activationEmail}
-                    onChange={(e) => setActivationEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                    placeholder="manager@supermarket.com"
-                    required
-                  />
-                  <p className="text-sm text-gray-600 mt-1">
-                    This will be their login email. A secure password will be generated automatically.
-                  </p>
+              <button
+                onClick={closeCredentialsModal}
+                className="text-gray-400 hover:text-gray-600 text-2xl"
+              >
+                ×
+              </button>
                 </div>
                 
-                <div className="flex space-x-2">
+            {loadingCredentials ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <span className="ml-3 text-gray-600">Loading credentials...</span>
+              </div>
+            ) : credentialsData ? (
+              <div>
+                {credentialsData.hasAccount ? (
+                  <div>
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                      <h3 className="text-lg font-semibold text-blue-800 mb-3">
+                        🔐 Login Credentials
+                      </h3>
+                      
+                      <div className="space-y-3">
+                        <div className="bg-white rounded border p-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            📧 Email Address
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <div className="font-mono text-sm bg-gray-50 p-2 rounded border flex-1">
+                              {credentialsData.user.email}
+                            </div>
                   <button
-                    type="submit"
-                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                              onClick={() => copyToClipboard(credentialsData.user.email, 'email')}
+                              className="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-1 whitespace-nowrap"
+                              title="Copy email to clipboard"
                   >
-                    Create Login & Activate
+                              📋 Copy
                   </button>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-white rounded border p-3">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            🔒 Password
+                          </label>
+                          {newPasswordGenerated ? (
+                            <div className="bg-green-50 border border-green-300 p-3 rounded">
+                              <div className="text-green-800 text-sm font-semibold mb-2">
+                                🎉 New Password Generated!
+                              </div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="font-mono text-lg bg-white p-2 rounded border border-green-300 select-all flex-1">
+                                  {newPasswordGenerated}
+                                </div>
                   <button
-                    type="button"
-                    onClick={closeActivationModal}
-                    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                  >
-                    Cancel
+                                  onClick={() => copyToClipboard(newPasswordGenerated, 'password')}
+                                  className="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700 flex items-center gap-1 whitespace-nowrap"
+                                  title="Copy password to clipboard"
+                                >
+                                  📋 Copy
                   </button>
                 </div>
-              </form>
+                              <div className="text-green-700 text-xs">
+                                Password copied! Share it with the supermarket manager.
+                              </div>
+                            </div>
             ) : (
               <div>
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                  <h3 className="text-lg font-semibold text-green-800 mb-2">
-                    ✅ Supermarket Activated Successfully!
-                  </h3>
-                  <p className="text-green-700 text-sm mb-3">
-                    Login credentials have been created. Please share these with the supermarket:
-                  </p>
-                  
-                  <div className="bg-white rounded border p-3 font-mono text-sm">
-                    <div className="mb-2">
-                      <strong>Email:</strong> {generatedCredentials.email}
+                              <div className="text-sm bg-yellow-50 p-2 rounded border border-yellow-200 mb-3">
+                                <span className="text-yellow-700">
+                                  {credentialsData.note}
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => handleResetPassword(credentialsData.supermarket.id)}
+                                disabled={resettingPassword}
+                                className="bg-orange-500 text-white px-3 py-1 rounded text-sm hover:bg-orange-600 disabled:bg-orange-300 flex items-center gap-2"
+                              >
+                                {resettingPassword ? (
+                                  <>
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                    Generating...
+                                  </>
+                                ) : (
+                                  <>
+                                    🔄 Generate New Password
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
+                    
+                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                      <h4 className="font-semibold text-gray-700 mb-3">📊 Market Account Information</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        {/* Left Column */}
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Status</label>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className={`px-2 py-1 rounded text-xs font-semibold ${
+                                credentialsData.supermarket.status === "ACTIVE"
+                                  ? "bg-green-100 text-green-800"
+                                  : credentialsData.supermarket.status === "PENDING"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}>
+                                {credentialsData.supermarket.status}
+                                {credentialsData.supermarket.status === "INACTIVE" && " 🚫"}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Market ID</label>
+                            <div className="font-mono text-sm text-gray-800 bg-white p-1 rounded border mt-1">
+                              {credentialsData.supermarket.id}
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">User Role</label>
+                            <div className="text-sm text-gray-800 mt-1">
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
+                                SUPERMARKET
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right Column */}
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Market Created</label>
+                            <div className="text-sm text-gray-800 mt-1">
+                              {new Date(credentialsData.supermarket.createdAt).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(credentialsData.supermarket.createdAt).toLocaleTimeString()}
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Created</label>
+                            <div className="text-sm text-gray-800 mt-1">
+                              {new Date(credentialsData.user.createdAt).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(credentialsData.user.createdAt).toLocaleTimeString()}
+                            </div>
+                    </div>
+
                     <div>
-                      <strong>Password:</strong> {generatedCredentials.password}
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</label>
+                            <div className="text-sm text-gray-800 mt-1">
+                              {new Date(credentialsData.user.lastUpdated).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {new Date(credentialsData.user.lastUpdated).toLocaleTimeString()}
+                            </div>
+                          </div>
                     </div>
                   </div>
                   
-                  <p className="text-green-600 text-xs mt-2">
-                    💡 Save these credentials and share them with the supermarket via email, phone, or in-person.
-                  </p>
-                </div>
+                      {/* Status Warnings */}
+                      {credentialsData.supermarket.status === "INACTIVE" && (
+                        <div className="bg-red-50 border border-red-200 rounded p-3 text-red-700 text-sm mt-4">
+                          <div className="flex items-start gap-2">
+                            <span className="text-red-500">⚠️</span>
+                            <div>
+                              <strong>Login Disabled:</strong> This user cannot log in while the supermarket is deactivated.
+                              <br/>
+                              <span className="text-xs">To allow login, activate the supermarket from the main list.</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {credentialsData.supermarket.status === "PENDING" && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-yellow-700 text-sm mt-4">
+                          <div className="flex items-start gap-2">
+                            <span className="text-yellow-500">⏳</span>
+                            <div>
+                              <strong>Pending Activation:</strong> This supermarket needs to be activated before users can log in.
+                              <br/>
+                              <span className="text-xs">Use the "Create Login" button to activate and generate credentials.</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+
+                    <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm text-blue-700 mb-4">
+                      <strong>💡 Tip:</strong> Share the email address with the supermarket manager. 
+                      If they need a new password, use the "Create Login" feature to reset their account.
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <div className="text-6xl mb-4">❌</div>
+                    <h3 className="text-lg font-semibold text-red-600 mb-2">No Account Found</h3>
+                    <p className="text-gray-600 mb-4">
+                      This supermarket doesn't have a login account yet.
+                    </p>
+                    <button
+                      onClick={() => {
+                        closeCredentialsModal()
+                        handleActivateSupermarket(selectedSupermarketForCredentials)
+                      }}
+                      className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                    >
+                      Create Login Account
+                    </button>
+                  </div>
+                )}
                 
-                <button
-                  onClick={closeActivationModal}
-                  className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                >
-                  Done
-                </button>
+                <div className="flex justify-end pt-4 border-t">
+                  <button
+                    onClick={closeCredentialsModal}
+                    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-red-600">
+                <div className="text-4xl mb-2">⚠️</div>
+                <p>Failed to load credentials</p>
               </div>
             )}
           </div>
         </div>
       )}
+
+      {/* New Credentials Modal - shown after creating supermarket */}
+      {showNewCredentialsModal && generatedCredentials && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <div className="text-center mb-4">
+              <div className="text-4xl mb-2">🎉</div>
+              <h2 className="text-xl font-bold text-green-600">
+                {credentialsModalTitle}
+              </h2>
+              <p className="text-gray-600 text-sm mt-1">
+                Here are the auto-generated login credentials
+                  </p>
+                </div>
+                
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    📧 Email Address
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <div className="font-mono text-sm bg-white p-2 rounded border flex-1 break-all">
+                      {generatedCredentials.email}
+                    </div>
+                    <button
+                      onClick={() => copyToClipboard(generatedCredentials.email, 'email')}
+                      className="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600 whitespace-nowrap"
+                      title="Copy email to clipboard"
+                    >
+                      📋
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    🔒 Password
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <div className="font-mono text-sm bg-white p-2 rounded border flex-1 break-all select-all">
+                      {generatedCredentials.password}
+                    </div>
+                <button
+                      onClick={() => copyToClipboard(generatedCredentials.password, 'password')}
+                      className="bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700 whitespace-nowrap"
+                      title="Copy password to clipboard"
+                >
+                      📋
+                </button>
+              </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm text-blue-700 mb-4">
+              <strong>💡 Important:</strong> Please share these credentials with the supermarket manager immediately. 
+              You can also access them later by clicking on the supermarket in the list.
+            </div>
+
+            <button
+              onClick={closeNewCredentialsModal}
+              className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-semibold"
+            >
+              Got it! Close
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
+

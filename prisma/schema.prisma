@@ -83,11 +83,18 @@ model Order {
 model OrderItem {
   id        String  @id @default(cuid())
   orderId   String
-  productId String
+  productId String? // Made optional for backward compatibility
   quantity  Int
   price     Float
+  
+  // 📸 PRODUCT SNAPSHOT DATA - preserved forever
+  productName        String   // Product name saved at order time
+  productDescription String? // Product description saved
+  productImage       String? // Product image URL saved
+  distributorId      String  // Which distributor it came from
+  
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product? @relation(fields: [productId], references: [id]) // Made optional
 
   @@map("order_items")
 }

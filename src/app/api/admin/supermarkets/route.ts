@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import bcrypt from "bcryptjs"
+import { generateUniqueEmail, generateSecurePassword } from "@/lib/email-utils"
 
 export async function GET() {
   try {
@@ -46,13 +48,48 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 })
     }
 
+    // Check if supermarket name already exists
+    const existingSupermarket = await prisma.supermarket.findFirst({
+      where: { name }
+    })
+
+    if (existingSupermarket) {
+      return NextResponse.json({ 
+        error: "A supermarket with this name already exists" 
+      }, { status: 400 })
+    }
+
+    // Create supermarket
     const supermarket = await prisma.supermarket.create({
       data: {
-        name
+        name,
+        status: "ACTIVE" // Set as active since admin is creating directly
       }
     })
 
-    return NextResponse.json(supermarket, { status: 201 })
+    // Generate unique email and secure password
+    const email = await generateUniqueEmail(name)
+    const password = generateSecurePassword(12)
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    // Create user account for the supermarket
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        role: "SUPERMARKET",
+        supermarketId: supermarket.id
+      }
+    })
+
+    return NextResponse.json({
+      supermarket,
+      credentials: {
+        email: user.email,
+        password, // Return the plain password for admin to share
+      },
+      message: "Supermarket created successfully with auto-generated login credentials"
+    }, { status: 201 })
   } catch (error) {
     console.error("Error creating supermarket:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

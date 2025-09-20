@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { generateUniqueEmail, generateSecurePassword } from "@/lib/email-utils"
 
 export async function POST(
   request: NextRequest,
@@ -39,14 +40,15 @@ export async function POST(
       }
     })
 
-    // Generate default password
-    const defaultPassword = "welcome123"
-    const hashedPassword = await bcrypt.hash(defaultPassword, 10)
+    // Generate unique email and secure password
+    const email = await generateUniqueEmail(supermarketRequest.supermarketName)
+    const password = generateSecurePassword(12)
+    const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Create supermarket user account
+    // Create supermarket user account with auto-generated credentials
     const user = await prisma.user.create({
       data: {
-        email: supermarketRequest.contactEmail,
+        email,
         password: hashedPassword,
         role: "SUPERMARKET",
         supermarketId: supermarket.id
@@ -65,11 +67,12 @@ export async function POST(
     })
 
     return NextResponse.json({ 
-      message: "Supermarket approved and created successfully",
+      message: "Supermarket approved and created successfully with auto-generated login credentials",
       supermarket,
+      originalContactEmail: supermarketRequest.contactEmail, // Keep reference to original contact
       loginCredentials: {
         email: user.email,
-        password: defaultPassword
+        password
       }
     })
   } catch (error) {

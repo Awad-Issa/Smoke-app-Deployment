@@ -34,9 +34,24 @@ export default function DistributorSupermarketsPage() {
     try {
       const response = await fetch("/api/distributor/supermarkets")
       const data = await response.json()
-      setSupermarkets(data)
+      
+      // Handle errors
+      if (!response.ok || data.error) {
+        console.error("API Error:", data.error || "Failed to fetch supermarkets")
+        setSupermarkets([]) // Set empty array instead of error object
+        return
+      }
+      
+      // Ensure data is an array
+      if (Array.isArray(data)) {
+        setSupermarkets(data)
+      } else {
+        console.error("Invalid data format - expected array, got:", typeof data)
+        setSupermarkets([])
+      }
     } catch (error) {
       console.error("Error fetching supermarkets:", error)
+      setSupermarkets([]) // Set empty array on error
     } finally {
       setLoading(false)
     }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
 interface Product {
@@ -43,9 +43,32 @@ export default function ProductsPage() {
     try {
       const response = await fetch("/api/supermarket/products")
       const data = await response.json()
-      setProducts(data)
+      
+      // Handle deactivation error
+      if (response.status === 403 && data.code === "ACCOUNT_DEACTIVATED") {
+        alert(data.message || "Your account has been deactivated. You will be logged out.")
+        // Redirect to login with deactivation message
+        window.location.href = "/login?error=account_deactivated"
+        return
+      }
+      
+      // Handle other errors
+      if (!response.ok || data.error) {
+        console.error("API Error:", data.error || "Failed to fetch products")
+        setProducts([]) // Set empty array instead of error object
+        return
+      }
+      
+      // Ensure data is an array
+      if (Array.isArray(data)) {
+        setProducts(data)
+      } else {
+        console.error("Invalid data format - expected array, got:", typeof data)
+        setProducts([])
+      }
     } catch (error) {
       console.error("Error fetching products:", error)
+      setProducts([]) // Set empty array on error
     } finally {
       setLoading(false)
     }
@@ -134,24 +157,41 @@ export default function ProductsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Browse Products</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-3xl font-bold">Browse Products</h1>
+          <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
+            🛒 Supermarket: {session.user.email}
+          </span>
+        </div>
         <div className="flex space-x-4">
+          <button
+            onClick={() => router.push("/account")}
+            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
+          >
+            👤 My Account
+          </button>
           <button
             onClick={() => router.push("/orders")}
             className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
           >
-            My Orders
+            📋 My Orders
           </button>
           <button
             onClick={() => router.push("/cart")}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 relative"
           >
-            Cart ({getTotalItems()})
+            🛒 Cart ({getTotalItems()})
             {getTotalItems() > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                 {getTotalItems()}
               </span>
             )}
+          </button>
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center gap-2"
+          >
+            🚪 Logout
           </button>
         </div>
       </div>

@@ -1,14 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 
 interface OrderItem {
   id: string
+  productId: string
   quantity: number
   price: number
-  product: {
+  product?: {
     id: string
     name: string
   }
@@ -48,9 +49,32 @@ export default function OrdersPage() {
     try {
       const response = await fetch("/api/supermarket/orders")
       const data = await response.json()
-      setOrders(data)
+      
+      // Handle deactivation error
+      if (response.status === 403 && data.code === "ACCOUNT_DEACTIVATED") {
+        alert(data.message || "Your account has been deactivated. You will be logged out.")
+        // Redirect to login with deactivation message
+        window.location.href = "/login?error=account_deactivated"
+        return
+      }
+      
+      // Handle other errors
+      if (!response.ok || data.error) {
+        console.error("API Error:", data.error || "Failed to fetch orders")
+        setOrders([]) // Set empty array instead of error object
+        return
+      }
+      
+      // Ensure data is an array
+      if (Array.isArray(data)) {
+        setOrders(data)
+      } else {
+        console.error("Invalid data format - expected array, got:", typeof data)
+        setOrders([])
+      }
     } catch (error) {
       console.error("Error fetching orders:", error)
+      setOrders([]) // Set empty array on error
     } finally {
       setLoading(false)
     }
@@ -78,13 +102,32 @@ export default function OrdersPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">My Orders</h1>
-        <button
-          onClick={() => router.push("/products")}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Continue Shopping
-        </button>
+        <div className="flex items-center gap-4">
+          <h1 className="text-3xl font-bold">My Orders</h1>
+          <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+            📋 {session?.user?.email}
+          </span>
+        </div>
+        <div className="flex space-x-4">
+          <button
+            onClick={() => router.push("/account")}
+            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
+          >
+            👤 My Account
+          </button>
+          <button
+            onClick={() => router.push("/products")}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            🛒 Continue Shopping
+          </button>
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center gap-2"
+          >
+            🚪 Logout
+          </button>
+        </div>
       </div>
 
       {orders.length === 0 ? (
@@ -175,7 +218,7 @@ export default function OrdersPage() {
                     {selectedOrder.items.map((item) => (
                       <div key={item.id} className="flex justify-between items-center">
                         <div>
-                          <p className="font-medium">{item.product.name}</p>
+                          <p className="font-medium">{item.product?.name || `Product ${item.productId} (Deleted)`}</p>
                           <p className="text-sm text-gray-600">
                             ${item.price.toFixed(2)} × {item.quantity}
                           </p>

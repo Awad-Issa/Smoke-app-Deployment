@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
 interface CartItem {
@@ -100,6 +100,15 @@ export default function CartPage() {
         router.push("/orders?success=true")
       } else {
         const error = await response.json()
+        
+        // Handle deactivation error
+        if (response.status === 403 && error.code === "ACCOUNT_DEACTIVATED") {
+          alert(error.message || "Your account has been deactivated. You will be logged out.")
+          // Redirect to login with deactivation message
+          window.location.href = "/login?error=account_deactivated"
+          return
+        }
+        
         alert(error.error || "Failed to place order")
       }
     } catch (error) {
@@ -113,13 +122,32 @@ export default function CartPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Shopping Cart</h1>
-        <button
-          onClick={() => router.push("/products")}
-          className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-        >
-          Continue Shopping
-        </button>
+        <div className="flex items-center gap-4">
+          <h1 className="text-3xl font-bold">Shopping Cart</h1>
+          <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+            🛍️ {session.user.email}
+          </span>
+        </div>
+        <div className="flex space-x-4">
+          <button
+            onClick={() => router.push("/account")}
+            className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600"
+          >
+            👤 My Account
+          </button>
+          <button
+            onClick={() => router.push("/products")}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            🛒 Continue Shopping
+          </button>
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center gap-2"
+          >
+            🚪 Logout
+          </button>
+        </div>
       </div>
 
       {cart.length === 0 ? (
