@@ -1,17 +1,19 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
 interface OrderItem {
   id: string
+  productId: string
   quantity: number
   price: number
-  product: {
-    id: string
-    name: string
-  }
+  // Snapshot data - preserved even if product is deleted
+  productName: string
+  productDescription?: string
+  productImage?: string
+  distributorId: string
 }
 
 interface Order {
@@ -46,9 +48,24 @@ export default function DistributorOrdersPage() {
     try {
       const response = await fetch("/api/distributor/orders")
       const data = await response.json()
-      setOrders(data)
+      
+      // Handle errors
+      if (!response.ok || data.error) {
+        console.error("API Error:", data.error || "Failed to fetch orders")
+        setOrders([]) // Set empty array instead of error object
+        return
+      }
+      
+      // Ensure data is an array
+      if (Array.isArray(data)) {
+        setOrders(data)
+      } else {
+        console.error("Invalid data format - expected array, got:", typeof data)
+        setOrders([])
+      }
     } catch (error) {
       console.error("Error fetching orders:", error)
+      setOrders([]) // Set empty array on error
     } finally {
       setLoading(false)
     }
@@ -110,6 +127,12 @@ export default function DistributorOrdersPage() {
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
             Manage Products
+          </button>
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center gap-2"
+          >
+            🚪 Logout
           </button>
         </div>
       </div>
@@ -197,7 +220,7 @@ export default function DistributorOrdersPage() {
                   {selectedOrder.items.map((item) => (
                     <div key={item.id} className="flex justify-between">
                       <span>
-                        {item.product.name} x {item.quantity}
+                        {item.productName || `Product ${item.productId} (Deleted)`} x {item.quantity}
                       </span>
                       <span>${(item.price * item.quantity).toFixed(2)}</span>
                     </div>

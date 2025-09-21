@@ -72,12 +72,8 @@ export async function DELETE(
       return NextResponse.json({ error: "Product not found" }, { status: 404 })
     }
 
-    // First delete all related order items
-    await prisma.orderItem.deleteMany({
-      where: { productId: id }
-    })
-    
-    // Then delete the product
+    // Don't delete order items - they should remain as historical records
+    // Just delete the product directly
     await prisma.product.delete({
       where: { id }
     })

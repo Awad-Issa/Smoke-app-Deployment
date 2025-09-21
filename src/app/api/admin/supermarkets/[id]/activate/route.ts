@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { generateUniqueEmail, generateSecurePassword } from "@/lib/email-utils"
 
 export async function POST(
   request: NextRequest,
@@ -15,23 +16,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { email } = await request.json()
     const { id } = await params
-
-    if (!email || !email.trim()) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 })
-    }
-
-    // Check if email already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    })
-
-    if (existingUser) {
-      return NextResponse.json({ 
-        error: "A user with this email already exists" 
-      }, { status: 400 })
-    }
 
     // Get the supermarket
     const supermarket = await prisma.supermarket.findUnique({
@@ -42,19 +27,66 @@ export async function POST(
       return NextResponse.json({ error: "Supermarket not found" }, { status: 404 })
     }
 
-    // Generate secure password
-    const password = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8)
-    const hashedPassword = await bcrypt.hash(password, 10)
-
-    // Create user account
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        role: "SUPERMARKET",
-        supermarketId: supermarket.id
+    // Check if supermarket already has a user account
+    const existingUser = await prisma.user.findFirst({
+      where: { 
+        supermarketId: supermarket.id,
+        role: "SUPERMARKET" 
       }
     })
+
+    let user;
+    let password;
+
+    if (existingUser) {
+      // User exists - reset their password
+      console.log('🔄 Resetting password for existing user:', existingUser.email);
+      password = generateSecurePassword(12)
+      console.log('🔐 Generated new password:', password, 'Length:', password.length);
+      
+      const hashedPassword = await bcrypt.hash(password, 10)
+      console.log('🔒 Hashed password length:', hashedPassword.length);
+
+      user = await prisma.user.update({
+        where: { id: existingUser.id },
+        data: { 
+          password: hashedPassword,
+          updatedAt: new Date()
+        }
+      })
+      console.log('✅ Password updated for user:', user.email);
+      
+      // Test the password immediately
+      const testPassword = await bcrypt.compare(password, hashedPassword)
+      console.log('🧪 Password test result:', testPassword);
+      
+    } else {
+      // No user exists - create new account
+      console.log('👤 Creating new user for supermarket:', supermarket.name);
+      
+      const email = await generateUniqueEmail(supermarket.name)
+      console.log('📧 Generated email:', email);
+      
+      password = generateSecurePassword(12)
+      console.log('🔐 Generated password:', password, 'Length:', password.length);
+      
+      const hashedPassword = await bcrypt.hash(password, 10)
+      console.log('🔒 Hashed password length:', hashedPassword.length);
+
+      user = await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          role: "SUPERMARKET",
+          supermarketId: supermarket.id
+        }
+      })
+      console.log('✅ Created new user:', user.email);
+      
+      // Test the password immediately
+      const testPassword = await bcrypt.compare(password, hashedPassword)
+      console.log('🧪 Password test result:', testPassword);
+    }
 
     // Activate the supermarket
     const updatedSupermarket = await prisma.supermarket.update({
@@ -62,14 +94,23 @@ export async function POST(
       data: { status: "ACTIVE" }
     })
 
-    return NextResponse.json({
-      message: "Supermarket activated successfully",
+    const responseData = {
+      message: existingUser 
+        ? "Password reset successfully" 
+        : "Supermarket activated successfully with auto-generated credentials",
       supermarket: updatedSupermarket,
       credentials: {
         email: user.email,
-        password: password
+        password
       }
-    })
+    }
+    
+    console.log('📤 Returning credentials to frontend:');
+    console.log('   📧 Email:', responseData.credentials.email);
+    console.log('   🔐 Password:', responseData.credentials.password);
+    console.log('   🏪 Supermarket status:', updatedSupermarket.status);
+    
+    return NextResponse.json(responseData)
   } catch (error) {
     console.error("Error activating supermarket:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

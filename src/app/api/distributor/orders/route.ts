@@ -35,16 +35,6 @@ export async function GET() {
             id: true,
             name: true
           }
-        },
-        items: {
-          include: {
-            product: {
-              select: {
-                id: true,
-                name: true
-              }
-            }
-          }
         }
       },
       orderBy: {
@@ -52,7 +42,31 @@ export async function GET() {
       }
     })
 
-    return NextResponse.json(orders)
+    // Fetch order items using snapshot data (no product join needed)
+    const ordersWithItems = await Promise.all(
+      orders.map(async (order) => {
+        const items = await prisma.orderItem.findMany({
+          where: { orderId: order.id },
+          select: {
+            id: true,
+            productId: true,
+            quantity: true,
+            price: true,
+            // Use snapshot data for display - preserved even if product is deleted
+            productName: true,
+            productDescription: true,
+            productImage: true,
+            distributorId: true
+          }
+        })
+        return {
+          ...order,
+          items
+        }
+      })
+    )
+
+    return NextResponse.json(ordersWithItems)
   } catch (error) {
     console.error("Error fetching orders:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

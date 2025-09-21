@@ -31,10 +31,27 @@ export const authOptions: NextAuthOptions = {
 
           if (!user) {
             console.log('❌ User not found:', credentials.email);
+            console.log('📋 Available users in database:');
+            const allUsers = await prisma.user.findMany({
+              where: { role: 'SUPERMARKET' },
+              select: { email: true, role: true, supermarket: { select: { name: true, status: true } } }
+            })
+            allUsers.forEach(u => {
+              console.log(`   📧 ${u.email} | ${u.role} | Market: ${u.supermarket?.name} (${u.supermarket?.status})`)
+            })
             return null
           }
 
           console.log('✅ User found:', user.email, user.role);
+          console.log('🏪 Associated supermarket:', user.supermarket?.name, user.supermarket?.status);
+
+          // Check if supermarket user's market is active
+          if (user.role === 'SUPERMARKET' && user.supermarket) {
+            if (user.supermarket.status !== 'ACTIVE') {
+              console.log('❌ Supermarket account is deactivated:', user.supermarket.name);
+              return null
+            }
+          }
 
           const isPasswordValid = await bcrypt.compare(
             credentials.password,
@@ -43,6 +60,7 @@ export const authOptions: NextAuthOptions = {
 
           if (!isPasswordValid) {
             console.log('❌ Invalid password for:', credentials.email);
+            console.log('🔍 Password length in DB:', user.password.length);
             return null
           }
 

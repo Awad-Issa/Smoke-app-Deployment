@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import { useRouter } from "next/navigation"
 
 interface Product {
@@ -42,9 +42,24 @@ export default function DistributorProductsPage() {
     try {
       const response = await fetch("/api/distributor/products")
       const data = await response.json()
-      setProducts(data)
+      
+      // Handle errors
+      if (!response.ok || data.error) {
+        console.error("API Error:", data.error || "Failed to fetch products")
+        setProducts([]) // Set empty array instead of error object
+        return
+      }
+      
+      // Ensure data is an array
+      if (Array.isArray(data)) {
+        setProducts(data)
+      } else {
+        console.error("Invalid data format - expected array, got:", typeof data)
+        setProducts([])
+      }
     } catch (error) {
       console.error("Error fetching products:", error)
+      setProducts([]) // Set empty array on error
     } finally {
       setLoading(false)
     }
@@ -123,7 +138,12 @@ export default function DistributorProductsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Products Management</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-3xl font-bold">Products Management</h1>
+          <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+            📦 Distributor: {session.user.email}
+          </span>
+        </div>
         <div className="space-x-2">
           <button
             onClick={() => router.push("/distributor/supermarkets")}
@@ -142,6 +162,12 @@ export default function DistributorProductsPage() {
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
           >
             Add Product
+          </button>
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center gap-2"
+          >
+            🚪 Logout
           </button>
         </div>
       </div>

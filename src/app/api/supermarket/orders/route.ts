@@ -1,38 +1,52 @@
 import { NextRequest, NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+import { validateSupermarketSession } from "@/lib/supermarket-auth"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { prisma } from "@/lib/prisma"
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session || session.user.role !== "SUPERMARKET") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    const validation = await validateSupermarketSession()
+    if (!validation.isValid) {
+      return validation.response
     }
+    
+    const session = validation.session
 
     const orders = await prisma.order.findMany({
       where: {
         supermarketId: session.user.supermarketId!
-      },
-      include: {
-        items: {
-          include: {
-            product: {
-              select: {
-                id: true,
-                name: true
-              }
-            }
-          }
-        }
       },
       orderBy: {
         createdAt: "desc"
       }
     })
 
-    return NextResponse.json(orders)
+    // Fetch order items using snapshot data (no product join needed)
+    const ordersWithItems = await Promise.all(
+      orders.map(async (order) => {
+        const items = await prisma.orderItem.findMany({
+          where: { orderId: order.id },
+          select: {
+            id: true,
+            productId: true,
+            quantity: true,
+            price: true,
+            // Use snapshot data for display - preserved even if product is deleted
+            productName: true,
+            productDescription: true,
+            productImage: true,
+            distributorId: true
+          }
+        })
+        return {
+          ...order,
+          items
+        }
+      })
+    )
+
+    return NextResponse.json(ordersWithItems)
   } catch (error) {
     console.error("Error fetching orders:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
@@ -45,6 +59,16 @@ export async function POST(request: NextRequest) {
     
     if (!session || session.user.role !== "SUPERMARKET") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    // Get the supermarket ID from the user record
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { supermarketId: true }
+    })
+
+    if (!user?.supermarketId) {
+      return NextResponse.json({ error: "Supermarket not found" }, { status: 400 })
     }
 
     const { items } = await request.json()
@@ -99,18 +123,23 @@ export async function POST(request: NextRequest) {
         sum + (item.price * item.quantity), 0
       )
 
-      console.log('📦 Creating order for distributor ID:', distributorId, 'from supermarket:', session.user.supermarketId)
+      console.log('📦 Creating order for distributor ID:', distributorId, 'from supermarket:', user.supermarketId)
 
       const order = await prisma.order.create({
         data: {
-          supermarketId: session.user.supermarketId!,
+          supermarketId: user.supermarketId,
           distributorId,
           total,
           items: {
             create: distributorItems.map((item: any) => ({
               productId: item.productId,
               quantity: item.quantity,
-              price: item.price
+              price: item.price,
+              // 📸 PRODUCT SNAPSHOT DATA - preserved forever
+              productName: item.product.name,
+              productDescription: item.product.description,
+              productImage: item.product.image,
+              distributorId: item.product.distributorId
             }))
           }
         },
