@@ -9,10 +9,11 @@ interface OrderItem {
   productId: string
   quantity: number
   price: number
-  product?: {
-    id: string
-    name: string
-  }
+  // Snapshot data - preserved even if product is deleted
+  productName: string
+  productDescription?: string
+  productImage?: string
+  distributorId: string
 }
 
 interface Order {
@@ -219,7 +220,7 @@ export default function DistributorOrdersPage() {
                   {selectedOrder.items.map((item) => (
                     <div key={item.id} className="flex justify-between">
                       <span>
-                        {item.product?.name || `Product ${item.productId} (Deleted)`} x {item.quantity}
+                        {item.productName || `Product ${item.productId} (Deleted)`} x {item.quantity}
                       </span>
                       <span>${(item.price * item.quantity).toFixed(2)}</span>
                     </div>

@@ -14,9 +14,24 @@ CREATE TABLE "users" (
 CREATE TABLE "supermarkets" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
-    "status" TEXT NOT NULL DEFAULT 'ACTIVE',
+    "status" TEXT NOT NULL DEFAULT 'PENDING',
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "supermarket_requests" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "supermarketName" TEXT NOT NULL,
+    "contactEmail" TEXT NOT NULL,
+    "contactPhone" TEXT,
+    "address" TEXT,
+    "businessLicense" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'PENDING',
+    "notes" TEXT,
+    "requestedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "reviewedAt" DATETIME,
+    "reviewedBy" TEXT
 );
 
 -- CreateTable
@@ -27,6 +42,7 @@ CREATE TABLE "products" (
     "price" REAL NOT NULL,
     "stock" INTEGER NOT NULL,
     "description" TEXT,
+    "image" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );
@@ -47,11 +63,15 @@ CREATE TABLE "orders" (
 CREATE TABLE "order_items" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "orderId" TEXT NOT NULL,
-    "productId" TEXT NOT NULL,
+    "productId" TEXT,
     "quantity" INTEGER NOT NULL,
     "price" REAL NOT NULL,
+    "productName" TEXT NOT NULL,
+    "productDescription" TEXT,
+    "productImage" TEXT,
+    "distributorId" TEXT NOT NULL,
     CONSTRAINT "order_items_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "orders" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "order_items_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "order_items_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateIndex

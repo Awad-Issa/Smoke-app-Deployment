@@ -42,18 +42,21 @@ export async function GET() {
       }
     })
 
-    // Fetch order items separately to handle deleted products
+    // Fetch order items using snapshot data (no product join needed)
     const ordersWithItems = await Promise.all(
       orders.map(async (order) => {
         const items = await prisma.orderItem.findMany({
           where: { orderId: order.id },
-          include: {
-            product: {
-              select: {
-                id: true,
-                name: true
-              }
-            }
+          select: {
+            id: true,
+            productId: true,
+            quantity: true,
+            price: true,
+            // Use snapshot data for display - preserved even if product is deleted
+            productName: true,
+            productDescription: true,
+            productImage: true,
+            distributorId: true
           }
         })
         return {
