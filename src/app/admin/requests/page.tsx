@@ -288,7 +288,7 @@ export default function AdminRequestsPage() {
 
           </div>
         )}
+       </div>
     </div>
   )
 }
-

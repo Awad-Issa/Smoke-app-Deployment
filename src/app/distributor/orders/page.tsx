@@ -285,5 +285,6 @@ export default function DistributorOrdersPage() {
           </div>
         )}
       </div>
+    </div>
   )
 }
