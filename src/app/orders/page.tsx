@@ -257,6 +257,7 @@ function OrdersPageContent() {
             ))}
           </div>
         )}
+      </div>
     </div>
   )
 }
