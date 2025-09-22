@@ -173,36 +173,56 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-bold text-gray-800">My Account</h1>
-          <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
-            🏪 {accountInfo.supermarket.name}
-          </span>
+    <div className="min-h-screen bg-gray-50">
+      {/* Mobile Header */}
+      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <button
+                onClick={() => router.push("/products")}
+                className="mr-3 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">My Account</h1>
+                <p className="text-sm text-gray-600">{accountInfo.supermarket.name}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => signOut({ callbackUrl: '/login' })}
+              className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
+          </div>
         </div>
-        <div className="flex space-x-4">
+      </header>
+
+      {/* Mobile Navigation */}
+      <nav className="bg-white border-b px-4 py-2">
+        <div className="flex gap-2 overflow-x-auto">
           <button
             onClick={() => router.push("/products")}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className="flex-shrink-0 bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors"
           >
-            Browse Products
+            🛒 Products
           </button>
           <button
             onClick={() => router.push("/orders")}
-            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            className="flex-shrink-0 bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-200 transition-colors"
           >
-            My Orders
-          </button>
-          <button
-            onClick={() => signOut({ callbackUrl: '/login' })}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center gap-2"
-          >
-            🚪 Logout
+            📋 Orders
           </button>
         </div>
-      </div>
+      </nav>
+
+      <div className="px-4 py-4">
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Information */}
