@@ -225,6 +225,7 @@ export default function CartPage() {
                 </div>
               </div>
             ))}
+          </div>
 
           {/* Order Summary */}
           <div className="lg:col-span-1">
