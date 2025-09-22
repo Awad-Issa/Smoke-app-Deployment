@@ -225,10 +225,9 @@ export default function CartPage() {
                 </div>
               </div>
             ))}
-          </div>
 
-          {/* Order Summary */}
-          <div className="lg:col-span-1">
+            {/* Order Summary */}
+            <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-md">
               <div className="p-6 border-b">
                 <h2 className="text-xl font-semibold">Order Summary</h2>
@@ -261,6 +260,7 @@ export default function CartPage() {
                   Order will be sent to distributor for processing
                 </p>
               </div>
+            </div>
             </div>
           </div>
         </div>
