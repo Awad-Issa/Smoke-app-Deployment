@@ -97,8 +97,18 @@ function OrdersPageContent() {
   }
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>
+    return (
+      <div className="min-h-screen flex justify-center items-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your orders...</p>
+        </div>
+      </div>
+    )
   }
+
+  // Ensure orders is always an array
+  const safeOrders = Array.isArray(orders) ? orders : []
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -117,7 +127,7 @@ function OrdersPageContent() {
               </button>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">My Orders</h1>
-                <p className="text-sm text-gray-600">{orders.length} orders</p>
+                <p className="text-sm text-gray-600">{safeOrders.length} orders</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -162,7 +172,7 @@ function OrdersPageContent() {
 
       <div className="px-4 py-4">
 
-        {orders.length === 0 ? (
+        {safeOrders.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
               <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,7 +190,7 @@ function OrdersPageContent() {
           </div>
         ) : (
           <div className="space-y-4">
-            {orders.map((order) => (
+            {safeOrders.map((order) => (
               <div
                 key={order.id}
                 className={`bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden cursor-pointer transition-all ${
@@ -204,16 +214,16 @@ function OrdersPageContent() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(order.status)}`}>
-                        {order.status}
+                      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(order.status || 'PENDING')}`}>
+                        {order.status || 'PENDING'}
                       </span>
-                      <p className="text-xl font-bold text-green-600 mt-1">${order.total.toFixed(2)}</p>
+                      <p className="text-xl font-bold text-green-600 mt-1">${(order.total || 0).toFixed(2)}</p>
                     </div>
                   </div>
                   
                   {/* Order Summary */}
                   <div className="flex items-center justify-between bg-gray-50 rounded-xl p-3">
-                    <span className="text-gray-700 font-medium">{order.items.length} items</span>
+                    <span className="text-gray-700 font-medium">{order.items?.length || 0} items</span>
                     <button className="text-blue-600 font-semibold text-sm">
                       {selectedOrder?.id === order.id ? 'Hide Details' : 'View Details'} →
                     </button>
@@ -224,18 +234,18 @@ function OrdersPageContent() {
                 {selectedOrder?.id === order.id && (
                   <div className="border-t border-gray-100 bg-gray-50">
                     <div className="p-4 space-y-3">
-                      {order.items.map((item) => (
+                      {(order.items || []).map((item) => (
                         <div key={item.id} className="bg-white rounded-xl p-3">
                           <div className="flex items-center justify-between">
                             <div className="flex-1">
-                              <h4 className="font-semibold text-gray-900">{item.productName}</h4>
+                              <h4 className="font-semibold text-gray-900">{item.productName || 'Product'}</h4>
                               {item.productDescription && (
                                 <p className="text-sm text-gray-600 mt-1">{item.productDescription}</p>
                               )}
                             </div>
                             <div className="text-right ml-4">
-                              <p className="font-semibold">{item.quantity}x ${item.price.toFixed(2)}</p>
-                              <p className="text-sm text-gray-600">${(item.quantity * item.price).toFixed(2)}</p>
+                              <p className="font-semibold">{item.quantity || 0}x ${(item.price || 0).toFixed(2)}</p>
+                              <p className="text-sm text-gray-600">${((item.quantity || 0) * (item.price || 0)).toFixed(2)}</p>
                             </div>
                           </div>
                         </div>
