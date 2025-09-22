@@ -223,8 +223,7 @@ export default function AccountPage() {
       </nav>
 
       <div className="px-4 py-4">
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Information */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -540,6 +539,7 @@ export default function AccountPage() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </div>
   )
