@@ -134,158 +134,160 @@ export default function AdminRequestsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Supermarket Registration Requests</h1>
-        <button
-          onClick={() => router.push("/admin/supermarkets")}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Manage Supermarkets
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Requests List */}
-        <div className="bg-white rounded-lg shadow-md">
-          <div className="p-6 border-b">
-            <h2 className="text-xl font-semibold">Registration Requests</h2>
-            <p className="text-sm text-gray-600 mt-1">
-              {requests.filter(r => r.status === "PENDING").length} pending requests
-            </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Mobile Header */}
+      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">👑 Admin Requests</h1>
+              <p className="text-sm text-gray-600">{requests.filter(r => r.status === "PENDING").length} pending</p>
+            </div>
+            <button
+              onClick={() => router.push("/admin/supermarkets")}
+              className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </button>
           </div>
-          <div className="max-h-96 overflow-y-auto">
+        </div>
+      </header>
+
+      <div className="px-4 py-4">
+
+        {requests.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No requests yet</h3>
+            <p className="text-gray-500 mb-6">Registration requests will appear here</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
             {requests.map((request) => (
               <div
                 key={request.id}
-                className={`p-4 border-b cursor-pointer hover:bg-gray-50 ${
-                  selectedRequest?.id === request.id ? "bg-blue-50" : ""
+                className={`bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden cursor-pointer transition-all mb-4 ${
+                  selectedRequest?.id === request.id ? "ring-2 ring-blue-500 border-blue-200" : ""
                 }`}
-                onClick={() => setSelectedRequest(request)}
+                onClick={() => setSelectedRequest(selectedRequest?.id === request.id ? null : request)}
               >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <p className="font-medium">{request.supermarketName}</p>
-                    <p className="text-sm text-gray-600">{request.contactEmail}</p>
-                    <p className="text-sm text-gray-600">
-                      {new Date(request.requestedAt).toLocaleDateString()}
-                    </p>
+                {/* Request Header */}
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h3 className="font-bold text-lg text-gray-900">🏪 {request.supermarketName}</h3>
+                      <p className="text-sm text-gray-600">📧 {request.contactEmail}</p>
+                      <p className="text-sm text-gray-600">
+                        📅 {new Date(request.requestedAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(request.status)}`}>
+                        {request.status === "PENDING" ? "⏳ Pending" : 
+                         request.status === "APPROVED" ? "✅ Approved" : 
+                         "❌ Rejected"}
+                      </span>
+                    </div>
                   </div>
-                  <span
-                    className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                      request.status
-                    )}`}
-                  >
-                    {request.status}
-                  </span>
+                  
+                  {/* Request Summary */}
+                  <div className="flex items-center justify-between bg-gray-50 rounded-xl p-3">
+                    <span className="text-gray-700 font-medium">
+                      {request.contactPhone ? "📞 Phone provided" : "📞 No phone"}
+                    </span>
+                    <button className="text-blue-600 font-semibold text-sm">
+                      {selectedRequest?.id === request.id ? 'Hide Details' : 'View Details'} →
+                    </button>
+                  </div>
                 </div>
+                
+                {/* Request Details (Expanded) */}
+                {selectedRequest?.id === request.id && (
+                  <div className="border-t border-gray-100 bg-gray-50">
+                    <div className="p-4">
+                      {/* Request Information */}
+                      <div className="space-y-3 mb-4">
+                        <h4 className="font-semibold text-gray-900">📋 Request Details</h4>
+                        <div className="bg-white rounded-xl p-3 space-y-2 text-sm">
+                          <div><strong>📧 Email:</strong> {request.contactEmail}</div>
+                          {request.contactPhone && (
+                            <div><strong>📞 Phone:</strong> {request.contactPhone}</div>
+                          )}
+                          {request.address && (
+                            <div><strong>📍 Address:</strong> {request.address}</div>
+                          )}
+                          {request.businessLicense && (
+                            <div><strong>📄 Business License:</strong> {request.businessLicense}</div>
+                          )}
+                          {request.reviewedAt && (
+                            <div><strong>👁️ Reviewed:</strong> {new Date(request.reviewedAt).toLocaleString()}</div>
+                          )}
+                          {request.notes && (
+                            <div><strong>📝 Notes:</strong> {request.notes}</div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Review Actions for Pending Requests */}
+                      {request.status === "PENDING" && (
+                        <div className="space-y-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">
+                              📝 Review Notes (optional)
+                            </label>
+                            <textarea
+                              value={reviewNotes}
+                              onChange={(e) => setReviewNotes(e.target.value)}
+                              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              rows={3}
+                              placeholder="Add any notes about this review..."
+                            />
+                          </div>
+                          <div className="flex gap-3">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleApprove(request.id);
+                              }}
+                              className="flex-1 bg-green-500 text-white py-3 px-4 rounded-xl font-semibold hover:bg-green-600 transition-all"
+                            >
+                              ✅ Approve Request
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleReject(request.id);
+                              }}
+                              className="px-6 bg-red-500 text-white py-3 rounded-xl font-semibold hover:bg-red-600 transition-all"
+                            >
+                              ❌ Reject
+                            </button>
+                          </div>
+                          <p className="text-sm text-blue-600 bg-blue-50 p-3 rounded-xl">
+                            💡 <strong>Approving</strong> will create the supermarket and generate login credentials
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
-            {requests.length === 0 && (
-              <div className="p-8 text-center text-gray-500">
-                No registration requests found.
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* Request Details */}
-        <div className="bg-white rounded-lg shadow-md">
-          <div className="p-6 border-b">
-            <h2 className="text-xl font-semibold">Request Details</h2>
           </div>
-          {selectedRequest ? (
-            <div className="p-6">
-              <div className="space-y-4 mb-6">
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Supermarket Name</label>
-                  <p className="text-lg font-medium">{selectedRequest.supermarketName}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Contact Email</label>
-                  <p>{selectedRequest.contactEmail}</p>
-                </div>
-                {selectedRequest.contactPhone && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Phone</label>
-                    <p>{selectedRequest.contactPhone}</p>
-                  </div>
-                )}
-                {selectedRequest.address && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Address</label>
-                    <p>{selectedRequest.address}</p>
-                  </div>
-                )}
-                {selectedRequest.businessLicense && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Business License</label>
-                    <p>{selectedRequest.businessLicense}</p>
-                  </div>
-                )}
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Requested Date</label>
-                  <p>{new Date(selectedRequest.requestedAt).toLocaleDateString()}</p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Status</label>
-                  <span
-                    className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                      selectedRequest.status
-                    )}`}
-                  >
-                    {selectedRequest.status}
-                  </span>
-                </div>
-                {selectedRequest.notes && (
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Admin Notes</label>
-                    <p className="text-sm bg-gray-50 p-3 rounded">{selectedRequest.notes}</p>
-                  </div>
-                )}
-              </div>
-
-              {selectedRequest.status === "PENDING" && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-gray-700 text-sm font-bold mb-2">
-                      Review Notes
-                    </label>
-                    <textarea
-                      value={reviewNotes}
-                      onChange={(e) => setReviewNotes(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                      rows={3}
-                      placeholder="Add notes about this decision..."
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleApprove(selectedRequest.id)}
-                      className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                    >
-                      Approve & Create Supermarket
-                    </button>
-                    <button
-                      onClick={() => handleReject(selectedRequest.id)}
-                      className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                    >
-                      Reject Request
-                    </button>
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    💡 Approving will create the supermarket and generate login credentials
-                  </p>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="p-8 text-center text-gray-500">
-              Select a request to view details
-            </div>
-          )}
-        </div>
-      </div>
+        )}
     </div>
   )
 }
