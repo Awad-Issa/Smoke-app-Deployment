@@ -1,8 +1,7 @@
 import { withAuth } from "next-auth/middleware"
-import { prisma } from "@/lib/prisma"
 
 export default withAuth(
-  async function middleware(req) {
+  function middleware(req) {
     const token = req.nextauth.token
     const pathname = req.nextUrl.pathname
 
@@ -13,38 +12,18 @@ export default withAuth(
       }
     }
 
-    // Distributor routes (includes /distributor/supermarkets for read-only access)
+    // Distributor routes
     if (pathname.startsWith("/distributor")) {
       if (token?.role !== "DISTRIBUTOR") {
         return Response.redirect(new URL("/login", req.url))
       }
     }
 
-    // Supermarket routes - check if supermarket is still active
+    // Supermarket routes - basic role check only
+    // Database checks moved to API routes to avoid edge runtime issues
     if (pathname.startsWith("/products") || pathname.startsWith("/cart") || pathname.startsWith("/orders") || pathname.startsWith("/account")) {
       if (token?.role !== "SUPERMARKET") {
         return Response.redirect(new URL("/login", req.url))
-      }
-
-      // Additional check: ensure supermarket is still active (only if we have a supermarketId)
-      if (token?.supermarketId) {
-        try {
-          const supermarket = await prisma.supermarket.findUnique({
-            where: { id: token.supermarketId },
-            select: { status: true }
-          })
-
-          if (!supermarket || supermarket.status !== "ACTIVE") {
-            // Supermarket has been deactivated - redirect to login with message
-            const loginUrl = new URL("/login", req.url)
-            loginUrl.searchParams.set("error", "account_deactivated")
-            return Response.redirect(loginUrl)
-          }
-        } catch (error) {
-          console.error("Error checking supermarket status in middleware:", error)
-          // Don't redirect on database errors during middleware - let the request continue
-          // The API endpoints will handle the validation
-        }
       }
     }
   },
