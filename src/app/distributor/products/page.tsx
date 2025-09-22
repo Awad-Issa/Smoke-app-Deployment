@@ -141,7 +141,7 @@ export default function DistributorProductsPage() {
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold">Products Management</h1>
           <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-            📦 Distributor: {session.user.email}
+            📦 Distributor: {session?.user?.email}
           </span>
         </div>
         <div className="space-x-2">

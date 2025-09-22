@@ -31,7 +31,7 @@ export async function fetchWithAuth(url: string, options?: RequestInit) {
 /**
  * API error handler that checks for deactivation
  */
-export function handleApiError(error: any, response?: Response) {
+export function handleApiError(error: unknown, response?: Response) {
   if (response?.status === 403) {
     // This might be an account deactivation - the fetchWithAuth should have handled it
     // but if we're here, it means the deactivation wasn't caught

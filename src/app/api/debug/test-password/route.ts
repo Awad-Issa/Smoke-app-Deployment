@@ -41,9 +41,9 @@ export async function GET() {
     })
   } catch (error) {
     console.error("Password test error:", error)
-    return NextResponse.json({ 
-      error: "Password test failed", 
-      details: error.message 
+    return NextResponse.json({
+      error: "Password test failed",
+      details: error instanceof Error ? error.message : String(error)
     }, { status: 500 })
   }
 }

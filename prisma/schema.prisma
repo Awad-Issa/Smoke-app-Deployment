@@ -1,13 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "mysql"
+  url      = "mysql://root:root@localhost:3306/smoke_app"
 }
 
 model User {
@@ -15,10 +12,10 @@ model User {
   email         String       @unique
   password      String
   role          Role
-  supermarket   Supermarket? @relation(fields: [supermarketId], references: [id])
   supermarketId String?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
+  supermarket   Supermarket? @relation(fields: [supermarketId], references: [id])
 
   @@map("users")
 }
@@ -26,6 +23,7 @@ model User {
 model Supermarket {
   id        String   @id @default(cuid())
   name      String
+  phone     String?  // Contact phone number
   status    Status   @default(PENDING)
   users     User[]
   orders    Order[]
@@ -41,12 +39,12 @@ model SupermarketRequest {
   contactEmail    String
   contactPhone    String?
   address         String?
-  businessLicense String?       // Optional business license number
+  businessLicense String?
   status          RequestStatus @default(PENDING)
-  notes           String?       // Admin notes
+  notes           String?
   requestedAt     DateTime      @default(now())
   reviewedAt      DateTime?
-  reviewedBy      String?       // Admin user ID who reviewed
+  reviewedBy      String?
 
   @@map("supermarket_requests")
 }
@@ -58,10 +56,10 @@ model Product {
   price         Float
   stock         Int
   description   String?
-  image         String?     // URL or path to product image
-  orderItems    OrderItem[]
+  image         String?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+  orderItems    OrderItem[]
 
   @@map("products")
 }
@@ -72,29 +70,26 @@ model Order {
   distributorId String
   status        OrderStatus @default(PENDING)
   total         Float       @default(0)
-  items         OrderItem[]
-  supermarket   Supermarket @relation(fields: [supermarketId], references: [id])
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
+  items         OrderItem[]
+  supermarket   Supermarket @relation(fields: [supermarketId], references: [id])
 
   @@map("orders")
 }
 
 model OrderItem {
-  id        String  @id @default(cuid())
-  orderId   String
-  productId String? // Made optional for backward compatibility
-  quantity  Int
-  price     Float
-  
-  // 📸 PRODUCT SNAPSHOT DATA - preserved forever
-  productName        String   // Product name saved at order time
-  productDescription String? // Product description saved
-  productImage       String? // Product image URL saved
-  distributorId      String  // Which distributor it came from
-  
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product   Product? @relation(fields: [productId], references: [id]) // Made optional
+  id                 String   @id @default(cuid())
+  orderId            String
+  productId          String?
+  quantity           Int
+  price              Float
+  productName        String
+  productDescription String?
+  productImage       String?
+  distributorId      String
+  product            Product? @relation(fields: [productId], references: [id])
+  order              Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("order_items")
 }

@@ -4,6 +4,18 @@ import { validateSupermarketSession } from "@/lib/supermarket-auth"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 
+interface OrderItem {
+  productId: string
+  quantity: number
+  price: number
+  product: {
+    name: string
+    description: string | null
+    image: string | null
+    distributorId: string
+  }
+}
+
 export async function GET() {
   try {
     const validation = await validateSupermarketSession()
@@ -78,7 +90,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify all products exist and have sufficient stock
-    const productIds = items.map((item: any) => item.productId)
+    const productIds = items.map((item: OrderItem) => item.productId)
     const products = await prisma.product.findMany({
       where: {
         id: {
@@ -119,7 +131,7 @@ export async function POST(request: NextRequest) {
     const createdOrders = []
 
     for (const [distributorId, distributorItems] of distributorOrders) {
-      const total = distributorItems.reduce((sum: number, item: any) => 
+      const total = distributorItems.reduce((sum: number, item: OrderItem) => 
         sum + (item.price * item.quantity), 0
       )
 
@@ -131,7 +143,7 @@ export async function POST(request: NextRequest) {
           distributorId,
           total,
           items: {
-            create: distributorItems.map((item: any) => ({
+            create: distributorItems.map((item: OrderItem) => ({
               productId: item.productId,
               quantity: item.quantity,
               price: item.price,

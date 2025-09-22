@@ -1,0 +1,262 @@
+SMOKEAPP - TECHNICAL PROJECT OVERVIEW
+=====================================
+
+PROJECT SUMMARY
+===============
+SmokeApp is a B2B wholesale platform for smoke product distribution with three distinct user roles:
+- Super Admin (Platform Owner): Manages supermarket registrations and platform access
+- Distributor: Manages product catalog and fulfills orders
+- Supermarket: Places orders and manages their business account
+
+TECH STACK & ARCHITECTURE
+=========================
+Frontend & Backend: Next.js 15 with App Router (Full-stack React framework)
+- Unified codebase for both frontend and backend
+- Server-side rendering (SSR) and static generation
+- API routes for backend functionality
+- File-based routing system
+
+Database: MySQL with Prisma ORM
+- Type-safe database queries
+- Automated migrations
+- Schema-first development approach
+
+Authentication: NextAuth.js
+- JWT-based session management
+- Role-based access control
+- Custom credential provider with bcrypt password hashing
+
+Styling: Tailwind CSS
+- Utility-first CSS framework
+- Responsive design system
+- Custom component styling
+
+TypeScript: Full type safety
+- Interface definitions for all data structures
+- Type-safe API responses and database queries
+
+PROJECT STRUCTURE
+=================
+src/
+├── app/                    # Next.js App Router pages and API routes
+│   ├── api/               # Backend API endpoints
+│   │   ├── admin/         # Super Admin APIs (supermarket management)
+│   │   ├── distributor/   # Distributor APIs (products, orders)
+│   │   ├── supermarket/   # Supermarket APIs (orders, account)
+│   │   └── auth/          # NextAuth configuration
+│   ├── admin/             # Super Admin dashboard pages
+│   ├── distributor/       # Distributor dashboard pages
+│   ├── login/             # Authentication page
+│   ├── products/          # Supermarket product browsing
+│   ├── cart/              # Shopping cart functionality
+│   └── orders/            # Order management pages
+├── lib/                   # Utility libraries and configurations
+│   ├── auth.ts           # NextAuth configuration
+│   ├── prisma.ts         # Database client
+│   └── supermarket-auth.ts # Custom auth validation
+├── middleware.ts          # Route protection and access control
+└── types/                # TypeScript type definitions
+
+DATABASE SCHEMA (Key Models)
+============================
+User Model:
+- id: Unique identifier (CUID)
+- email: Login credential
+- password: Bcrypt hashed
+- role: SUPER_ADMIN | DISTRIBUTOR | SUPERMARKET
+- supermarketId: Foreign key (for supermarket users)
+
+Supermarket Model:
+- id: Unique identifier
+- name: Business name
+- phone: Contact information
+- status: PENDING | ACTIVE | INACTIVE
+- Relationships: users[], orders[]
+
+Product Model:
+- id: Unique identifier
+- distributorId: Owner of the product
+- name, price, stock: Product details
+- description, image: Optional metadata
+- Relationships: orderItems[]
+
+Order Model:
+- id: Unique identifier
+- supermarketId: Customer
+- distributorId: Supplier
+- status: PENDING | SHIPPED | COMPLETED | CANCELLED
+- total: Calculated order value
+- Relationships: items[], supermarket
+
+OrderItem Model (with Snapshot System):
+- id: Unique identifier
+- orderId: Parent order
+- productId: Reference to product (nullable for deleted products)
+- quantity, price: Order details
+- productName, productDescription, productImage: SNAPSHOT DATA
+- distributorId: Snapshot of distributor info
+
+KEY TECHNICAL FEATURES
+======================
+
+1. ROLE-BASED ACCESS CONTROL
+- Middleware protection on all protected routes
+- Session validation with JWT tokens
+- Dynamic route redirection based on user role
+- Real-time supermarket status checking
+
+2. ORDER SNAPSHOT SYSTEM
+- Product information preserved in OrderItem model
+- Orders remain intact even if products are deleted
+- Prevents data loss and maintains order history
+- Backward compatibility for existing orders
+
+3. AUTHENTICATION FLOW
+- Custom credential provider with email/password
+- Bcrypt password hashing for security
+- Session management with JWT tokens
+- Role and supermarket status validation
+- Automatic deactivated account detection
+
+4. API ARCHITECTURE
+- RESTful API design with proper HTTP methods
+- Consistent error handling and status codes
+- Session validation on all protected endpoints
+- Transaction-based operations for data consistency
+
+5. MIDDLEWARE IMPLEMENTATION
+- Route protection based on user roles
+- Real-time supermarket status validation
+- Automatic redirects for unauthorized access
+- Database queries for active status checking
+
+BUSINESS LOGIC IMPLEMENTATION
+============================
+
+Super Admin Workflow:
+- Approve/reject supermarket registration requests
+- Activate/deactivate supermarket accounts
+- Manage platform access and user accounts
+- Generate credentials for approved supermarkets
+
+Distributor Workflow:
+- CRUD operations for product catalog
+- Order management and status updates
+- Stock management with automatic deduction
+- View associated supermarkets (read-only)
+
+Supermarket Workflow:
+- Browse distributor product catalogs
+- Shopping cart with session persistence
+- Order placement with stock validation
+- Order tracking and history viewing
+- Account management and password changes
+
+ADVANCED TECHNICAL IMPLEMENTATIONS
+==================================
+
+1. MULTI-DISTRIBUTOR ORDER PROCESSING
+- Automatic order splitting by distributor
+- Separate orders created for each supplier
+- Stock validation before order confirmation
+- Atomic transactions for data consistency
+
+2. DYNAMIC ROUTE PROTECTION
+- Middleware-based access control
+- Real-time permission validation
+- Automatic session refresh and validation
+- Custom error handling for deactivated accounts
+
+3. DATABASE RELATIONSHIP MANAGEMENT
+- Complex foreign key relationships
+- Cascade delete operations where appropriate
+- Optional relationships for data preservation
+- Efficient query optimization with includes
+
+4. ERROR HANDLING & LOGGING
+- Comprehensive error logging in API routes
+- User-friendly error messages
+- Debug mode for development
+- Transaction rollback on failures
+
+5. SECURITY IMPLEMENTATIONS
+- Password hashing with bcrypt
+- JWT token management
+- SQL injection prevention with Prisma
+- Input validation and sanitization
+- Session-based authorization checks
+
+DEPLOYMENT & CONFIGURATION
+==========================
+Environment Variables:
+- DATABASE_URL: MySQL connection string
+- NEXTAUTH_SECRET: JWT signing secret
+- NEXTAUTH_URL: Application base URL
+
+Database Management:
+- Prisma migrations for schema changes
+- Seeding scripts for initial data
+- Database studio for development
+- Production migration deployment
+
+Performance Considerations:
+- Server-side rendering for SEO
+- Optimized database queries with proper indexing
+- Efficient API route design
+- Proper error boundaries and loading states
+
+TESTING & DEVELOPMENT
+====================
+Development Tools:
+- TypeScript for type safety
+- ESLint for code quality
+- Prisma Studio for database management
+- Next.js development server with hot reload
+
+API Testing:
+- Built-in API route testing
+- Session simulation for protected routes
+- Database transaction testing
+- Error scenario validation
+
+SCALABILITY FEATURES
+====================
+- Modular component architecture
+- Reusable utility functions
+- Efficient database queries
+- Proper separation of concerns
+- Type-safe API contracts
+
+INTERVIEW TALKING POINTS
+========================
+
+1. ARCHITECTURE DECISIONS
+- Why Next.js: Full-stack capabilities, SSR, file-based routing
+- Why Prisma: Type safety, migration management, developer experience
+- Why NextAuth: Industry standard, flexible, secure
+
+2. COMPLEX FEATURES YOU IMPLEMENTED
+- Order snapshot system for data preservation
+- Multi-distributor order processing
+- Real-time access control with middleware
+- Role-based dynamic routing
+
+3. CHALLENGES SOLVED
+- Data consistency across complex relationships
+- User session management with role validation
+- Preventing data loss when products are deleted
+- Secure authentication with multiple user types
+
+4. CODE QUALITY PRACTICES
+- TypeScript for type safety
+- Consistent error handling
+- Proper separation of concerns
+- Reusable component patterns
+
+5. SECURITY CONSIDERATIONS
+- Password hashing and validation
+- JWT token management
+- SQL injection prevention
+- Input validation and sanitization
+
+This project demonstrates full-stack development skills, database design, authentication systems, and complex business logic implementation in a production-ready application.

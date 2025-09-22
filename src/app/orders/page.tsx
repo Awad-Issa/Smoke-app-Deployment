@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSession, signOut } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 
@@ -24,7 +24,7 @@ interface Order {
   items: OrderItem[]
 }
 
-export default function OrdersPage() {
+function OrdersPageContent() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -273,5 +273,13 @@ export default function OrdersPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function OrdersPage() {
+  return (
+    <Suspense fallback={<div className="container mx-auto px-4 py-8">Loading orders...</div>}>
+      <OrdersPageContent />
+    </Suspense>
   )
 }

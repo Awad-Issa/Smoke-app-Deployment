@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation"
 interface Supermarket {
   id: string
   name: string
+  phone?: string
   status: string
   createdAt: string
   _count: {
@@ -20,6 +21,7 @@ interface SupermarketCredentials {
   supermarket: {
     id: string
     name: string
+    phone?: string
     status: string
     createdAt: string
   }
@@ -38,6 +40,7 @@ export default function SupermarketsPage() {
   const [supermarkets, setSupermarkets] = useState<Supermarket[]>([])
   const [showAddForm, setShowAddForm] = useState(false)
   const [newSupermarketName, setNewSupermarketName] = useState("")
+  const [newSupermarketPhone, setNewSupermarketPhone] = useState("")
   const [loading, setLoading] = useState(true)
   const [generatedCredentials, setGeneratedCredentials] = useState<{email: string, password: string} | null>(null)
   const [showNewCredentialsModal, setShowNewCredentialsModal] = useState(false)
@@ -112,7 +115,7 @@ export default function SupermarketsPage() {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ name: newSupermarketName })
+        body: JSON.stringify({ name: newSupermarketName, phone: newSupermarketPhone })
       })
 
       if (response.ok) {
@@ -122,6 +125,7 @@ export default function SupermarketsPage() {
         setGeneratedCredentials(data.credentials)
         setCredentialsModalTitle("Supermarket Created Successfully!")
         setNewSupermarketName("")
+        setNewSupermarketPhone("")
         setShowAddForm(false)
         setShowNewCredentialsModal(true)
         
@@ -336,17 +340,31 @@ export default function SupermarketsPage() {
         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
           <h2 className="text-xl font-semibold mb-4">Add New Supermarket</h2>
           <form onSubmit={handleAddSupermarket}>
-            <div className="mb-4">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Supermarket Name
-              </label>
-              <input
-                type="text"
-                value={newSupermarketName}
-                onChange={(e) => setNewSupermarketName(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                required
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Supermarket Name
+                </label>
+                <input
+                  type="text"
+                  value={newSupermarketName}
+                  onChange={(e) => setNewSupermarketName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={newSupermarketPhone}
+                  onChange={(e) => setNewSupermarketPhone(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="+1 (555) 123-4567"
+                />
+              </div>
             </div>
             <div className="flex gap-2">
               <button
@@ -383,6 +401,9 @@ export default function SupermarketsPage() {
                 Name
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Phone
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -416,6 +437,11 @@ export default function SupermarketsPage() {
                       </span>
                     )}
                   </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {supermarket.phone || (
+                    <span className="text-gray-400 italic">Not provided</span>
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
@@ -605,6 +631,15 @@ export default function SupermarketsPage() {
                           </div>
 
                           <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</label>
+                            <div className="text-sm text-gray-800 mt-1">
+                              {credentialsData.supermarket.phone || (
+                                <span className="text-gray-400 italic">Not provided</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div>
                             <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Market ID</label>
                             <div className="font-mono text-sm text-gray-800 bg-white p-1 rounded border mt-1">
                               {credentialsData.supermarket.id}
@@ -688,7 +723,7 @@ export default function SupermarketsPage() {
                             <div>
                               <strong>Pending Activation:</strong> This supermarket needs to be activated before users can log in.
                               <br/>
-                              <span className="text-xs">Use the "Create Login" button to activate and generate credentials.</span>
+                              <span className="text-xs">Use the &ldquo;Create Login&rdquo; button to activate and generate credentials.</span>
                             </div>
                           </div>
                         </div>
@@ -698,7 +733,7 @@ export default function SupermarketsPage() {
 
                     <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm text-blue-700 mb-4">
                       <strong>💡 Tip:</strong> Share the email address with the supermarket manager. 
-                      If they need a new password, use the "Create Login" feature to reset their account.
+                      If they need a new password, use the &ldquo;Create Login&rdquo; feature to reset their account.
                     </div>
                   </div>
                 ) : (
@@ -706,7 +741,7 @@ export default function SupermarketsPage() {
                     <div className="text-6xl mb-4">❌</div>
                     <h3 className="text-lg font-semibold text-red-600 mb-2">No Account Found</h3>
                     <p className="text-gray-600 mb-4">
-                      This supermarket doesn't have a login account yet.
+                      This supermarket doesn&apos;t have a login account yet.
                     </p>
                     <button
                       onClick={() => {

@@ -121,7 +121,7 @@ export default function DistributorSupermarketsPage() {
         <div className="p-6 border-b">
           <h2 className="text-xl font-semibold">Supermarkets on Platform</h2>
           <p className="text-gray-600 text-sm mt-1">
-            View all supermarkets that can purchase your products
+            View all supermarkets that can purchase your products. Click on any row to view detailed information and order history.
           </p>
         </div>
         <table className="w-full">
@@ -149,9 +149,25 @@ export default function DistributorSupermarketsPage() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {supermarkets.map((supermarket) => (
-              <tr key={supermarket.id} className={supermarket.status === "INACTIVE" ? "opacity-60" : ""}>
+              <tr 
+                key={supermarket.id} 
+                className={`cursor-pointer hover:bg-gray-50 transition-colors ${
+                  supermarket.status === "INACTIVE" ? "opacity-60" : ""
+                }`}
+                onClick={() => router.push(`/distributor/supermarkets/${supermarket.id}`)}
+              >
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {supermarket.name}
+                  <div className="flex items-center">
+                    <span>{supermarket.name}</span>
+                    <svg 
+                      className="ml-2 w-4 h-4 text-gray-400" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span

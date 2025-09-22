@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { name } = await request.json()
+    const { name, phone } = await request.json()
 
     if (!name) {
       return NextResponse.json({ error: "Name is required" }, { status: 400 })
@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
     const supermarket = await prisma.supermarket.create({
       data: {
         name,
+        phone, // Include phone number if provided
         status: "ACTIVE" // Set as active since admin is creating directly
       }
     })

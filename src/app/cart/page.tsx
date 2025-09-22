@@ -125,7 +125,7 @@ export default function CartPage() {
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold">Shopping Cart</h1>
           <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
-            🛍️ {session.user.email}
+            🛍️ {session?.user?.email}
           </span>
         </div>
         <div className="flex space-x-4">

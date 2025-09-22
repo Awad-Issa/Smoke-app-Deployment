@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
     const supermarket = await prisma.supermarket.create({
       data: {
         name: supermarketName,
+        phone: contactPhone, // Store the phone number
         status: "PENDING" // Will be activated by admin
       }
     })

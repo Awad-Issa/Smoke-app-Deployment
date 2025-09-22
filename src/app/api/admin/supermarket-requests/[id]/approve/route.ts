@@ -36,6 +36,7 @@ export async function POST(
     const supermarket = await prisma.supermarket.create({
       data: {
         name: supermarketRequest.supermarketName,
+        phone: supermarketRequest.contactPhone, // Copy phone from request
         status: "ACTIVE"
       }
     })

@@ -160,7 +160,7 @@ export default function ProductsPage() {
         <div className="flex items-center gap-4">
           <h1 className="text-3xl font-bold">Browse Products</h1>
           <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm font-medium">
-            🛒 Supermarket: {session.user.email}
+            🛒 Supermarket: {session?.user?.email}
           </span>
         </div>
         <div className="flex space-x-4">

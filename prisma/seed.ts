@@ -43,6 +43,7 @@ async function main() {
     create: {
       id: 'sample-supermarket-id',
       name: 'Sample Supermarket',
+      phone: '+1 (555) 123-4567',
       status: 'ACTIVE'
     }
   })
