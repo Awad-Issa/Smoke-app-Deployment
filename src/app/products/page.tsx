@@ -156,7 +156,7 @@ export default function ProductsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Mobile Header */}
+      {/* Mobile Header - Updated */}
       <header className="bg-white shadow-sm border-b sticky top-0 z-10">
         <div className="px-4 py-3">
           <div className="flex items-center justify-between">
