@@ -295,216 +295,249 @@ export default function SupermarketsPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center gap-4">
-        <h1 className="text-3xl font-bold">Supermarkets Management</h1>
-          <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
-            👑 Admin: {session?.user?.email}
-          </span>
-        </div>
-        <div className="space-x-2">
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Add Supermarket Directly
-          </button>
-          <button
-            onClick={() => signOut({ callbackUrl: '/login' })}
-            className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex items-center gap-2"
-          >
-            🚪 Logout
-          </button>
-        </div>
-      </div>
-
-      {/* Pending Supermarkets Alert */}
-      {supermarkets.filter(s => s.status === "PENDING").length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center">
-            <div className="text-yellow-600 mr-3">⚠️</div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Mobile Header */}
+      <header className="bg-white shadow-sm border-b sticky top-0 z-10">
+        <div className="px-4 py-3">
+          <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-yellow-800">
-                {supermarkets.filter(s => s.status === "PENDING").length} Supermarket(s) Pending Approval
-              </h3>
-              <p className="text-yellow-700 text-sm">
-                Distributors have added new supermarkets that need your approval to start ordering.
-              </p>
+              <h1 className="text-xl font-bold text-gray-900">👑 Admin Panel</h1>
+              <p className="text-sm text-gray-600">{supermarkets.length} supermarkets</p>
             </div>
+            <button
+              onClick={() => signOut({ callbackUrl: '/login' })}
+              className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
           </div>
         </div>
-      )}
+      </header>
 
-      {showAddForm && (
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-          <h2 className="text-xl font-semibold mb-4">Add New Supermarket</h2>
-          <form onSubmit={handleAddSupermarket}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Supermarket Name
-                </label>
-                <input
-                  type="text"
-                  value={newSupermarketName}
-                  onChange={(e) => setNewSupermarketName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                  required
-                />
+      {/* Mobile Navigation */}
+      <nav className="bg-white border-b">
+        <div className="px-4 py-2">
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            <button
+              onClick={() => router.push("/admin/requests")}
+              className="flex-shrink-0 bg-yellow-500 text-white px-4 py-2 rounded-xl font-semibold hover:bg-yellow-600 transition-all"
+            >
+              📋 Requests
+            </button>
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="flex-shrink-0 bg-blue-500 text-white px-4 py-2 rounded-xl font-semibold hover:bg-blue-600 transition-all"
+            >
+              ➕ Add Supermarket
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <div className="px-4 py-4">
+
+        {/* Pending Alert */}
+        {supermarkets.filter(s => s.status === "PENDING").length > 0 && (
+          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-4 mb-4">
+            <div className="flex items-center">
+              <div className="text-yellow-600 mr-3 text-2xl">⚠️</div>
+              <div className="flex-1">
+                <h3 className="font-bold text-yellow-800 text-lg">
+                  {supermarkets.filter(s => s.status === "PENDING").length} Pending Approval
+                </h3>
+                <p className="text-yellow-700 text-sm">
+                  New supermarkets need your approval to start ordering
+                </p>
               </div>
-              <div>
-                <label className="block text-gray-700 text-sm font-bold mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={newSupermarketPhone}
-                  onChange={(e) => setNewSupermarketPhone(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                  placeholder="+1 (555) 123-4567"
-                />
-              </div>
-            </div>
-            <div className="flex gap-2">
               <button
-                type="submit"
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                onClick={() => router.push("/admin/requests")}
+                className="bg-yellow-500 text-white px-4 py-2 rounded-xl font-semibold hover:bg-yellow-600 transition-all text-sm"
               >
-                Add Supermarket
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowAddForm(false)}
-                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-              >
-                Cancel
+                Review →
               </button>
             </div>
-          </form>
-        </div>
-      )}
+          </div>
+        )}
 
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="bg-blue-50 px-4 py-2 border-b border-blue-200">
-          <p className="text-sm text-blue-700">
-            💡 <strong>Tip:</strong> Click on any supermarket row to view detailed account information including:
-            <strong> login credentials, account statistics, order history, and activity tracking.</strong>
-            <br/>
-            <span className="text-xs">⚠️ Deactivating a supermarket will prevent their users from logging in.</span>
-          </p>
-        </div>
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Name
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Phone
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Users
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Orders
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Created
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {supermarkets.map((supermarket) => (
-              <tr 
-                key={supermarket.id} 
-                onClick={() => handleViewCredentials(supermarket)}
-                className="hover:bg-gray-50 cursor-pointer"
-                title="Click to view login credentials and account details"
-              >
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  <div className="flex items-center gap-2">
-                    <span>{supermarket.name}</span>
-                    {supermarket._count.users === 0 && (
-                      <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">
-                        No account
+        {showAddForm && (
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 mb-4">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">➕ Add New Supermarket</h2>
+            <form onSubmit={handleAddSupermarket}>
+              <div className="space-y-4 mb-4">
+                <div>
+                  <label className="block text-gray-700 text-sm font-semibold mb-2">
+                    🏪 Supermarket Name
+                  </label>
+                  <input
+                    type="text"
+                    value={newSupermarketName}
+                    onChange={(e) => setNewSupermarketName(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter supermarket name"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-gray-700 text-sm font-semibold mb-2">
+                    📞 Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={newSupermarketPhone}
+                    onChange={(e) => setNewSupermarketPhone(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="+1 (555) 123-4567"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="submit"
+                  className="flex-1 bg-green-500 text-white py-3 px-4 rounded-xl font-semibold hover:bg-green-600 transition-all"
+                >
+                  ✅ Add Supermarket
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddForm(false)}
+                  className="px-6 bg-gray-500 text-white py-3 rounded-xl font-semibold hover:bg-gray-600 transition-all"
+                >
+                  ❌ Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {supermarkets.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+              <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">No supermarkets yet</h3>
+            <p className="text-gray-500 mb-6">Add your first supermarket to get started</p>
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-lg"
+            >
+              ➕ Add First Supermarket
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Mobile Tip */}
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-2xl p-4 mb-4">
+              <p className="text-sm text-blue-700">
+                💡 <strong>Tap any supermarket</strong> to view login credentials, stats, and manage accounts.
+                <br/>
+                <span className="text-xs">⚠️ Deactivating prevents user logins.</span>
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {supermarkets.map((supermarket) => (
+                <div
+                  key={supermarket.id}
+                  className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 cursor-pointer transition-all hover:shadow-xl"
+                  onClick={() => handleViewCredentials(supermarket)}
+                >
+                  {/* Header */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-lg text-gray-900">🏪 {supermarket.name}</h3>
+                        {supermarket._count.users === 0 && (
+                          <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">
+                            No Account
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        📞 {supermarket.phone || "No phone provided"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        📅 Joined {new Date(supermarket.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        })}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                          supermarket.status === "ACTIVE"
+                            ? "bg-green-100 text-green-800"
+                            : supermarket.status === "PENDING"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {supermarket.status === "ACTIVE" ? "✅ Active" : 
+                         supermarket.status === "PENDING" ? "⏳ Pending" : 
+                         "🚫 Inactive"}
                       </span>
+                    </div>
+                  </div>
+                  
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-xl p-3 mb-3">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-blue-600">{supermarket._count.users}</div>
+                      <div className="text-xs text-gray-600">👥 Users</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-green-600">{supermarket._count.orders}</div>
+                      <div className="text-xs text-gray-600">📋 Orders</div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewCredentials(supermarket);
+                      }}
+                      className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-xl font-semibold hover:bg-blue-600 transition-all text-sm"
+                    >
+                      👁️ View Details
+                    </button>
+                    {supermarket.status === "PENDING" ? (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleActivateSupermarket(supermarket);
+                        }}
+                        className="bg-green-500 text-white py-2 px-4 rounded-xl font-semibold hover:bg-green-600 transition-all text-sm"
+                      >
+                        ✅ Activate
+                      </button>
+                    ) : (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSupermarketStatus(supermarket.id, supermarket.status, supermarket.name);
+                        }}
+                        className={`py-2 px-4 rounded-xl font-semibold transition-all text-sm ${
+                          supermarket.status === "ACTIVE"
+                            ? "bg-red-500 hover:bg-red-600 text-white"
+                            : "bg-green-500 hover:bg-green-600 text-white"
+                        }`}
+                      >
+                        {supermarket.status === "ACTIVE" ? "🚫 Deactivate" : "✅ Activate"}
+                      </button>
                     )}
                   </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {supermarket.phone || (
-                    <span className="text-gray-400 italic">Not provided</span>
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      supermarket.status === "ACTIVE"
-                        ? "bg-green-100 text-green-800"
-                        : supermarket.status === "PENDING"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                    title={
-                      supermarket.status === "INACTIVE" 
-                        ? "🚫 Login disabled - Users cannot access their account"
-                        : supermarket.status === "ACTIVE"
-                        ? "✅ Active - Users can log in normally"
-                        : "⏳ Pending activation"
-                    }
-                  >
-                    {supermarket.status}
-                    {supermarket.status === "INACTIVE" && " 🚫"}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {supermarket._count.users}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {supermarket._count.orders}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {new Date(supermarket.createdAt).toLocaleDateString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                  {supermarket.status === "PENDING" ? (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation() // Prevent row click
-                        handleActivateSupermarket(supermarket)
-                      }}
-                      className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600"
-                    >
-                      Create Login
-                    </button>
-                  ) : (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation() // Prevent row click
-                        toggleSupermarketStatus(supermarket.id, supermarket.status, supermarket.name)
-                      }}
-                      className={`${
-                        supermarket.status === "ACTIVE"
-                          ? "text-red-600 hover:text-red-900"
-                          : "text-green-600 hover:text-green-900"
-                      }`}
-                    >
-                      {supermarket.status === "ACTIVE" ? "Deactivate" : "Activate"}
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
       {/* Credentials Viewing Modal */}
       {showCredentialsModal && selectedSupermarketForCredentials && (
@@ -842,7 +875,7 @@ export default function SupermarketsPage() {
           </div>
         </div>
       )}
-
+      </div>
     </div>
   )
 }
