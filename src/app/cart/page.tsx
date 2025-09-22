@@ -227,44 +227,39 @@ export default function CartPage() {
             ))}
 
             {/* Order Summary */}
-            <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md">
-              <div className="p-6 border-b">
-                <h2 className="text-xl font-semibold">Order Summary</h2>
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
+              <div className="mb-4">
+                <h2 className="text-xl font-bold text-gray-900">Order Summary</h2>
               </div>
-              <div className="p-6">
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span>Items ({getTotalItems()})</span>
-                    <span>${getTotalPrice().toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Shipping</span>
-                    <span>Free</span>
-                  </div>
-                  <div className="border-t pt-3">
-                    <div className="flex justify-between font-semibold text-lg">
-                      <span>Total</span>
-                      <span>${getTotalPrice().toFixed(2)}</span>
-                    </div>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Items ({getTotalItems()})</span>
+                  <span className="font-semibold">${getTotalPrice().toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Shipping</span>
+                  <span className="font-semibold text-green-600">Free</span>
+                </div>
+                <div className="border-t pt-3">
+                  <div className="flex justify-between font-bold text-lg">
+                    <span>Total</span>
+                    <span className="text-green-600">${getTotalPrice().toFixed(2)}</span>
                   </div>
                 </div>
-                <button
-                  onClick={handleCheckout}
-                  disabled={loading || cart.length === 0}
-                  className="w-full mt-6 bg-green-500 text-white py-3 px-4 rounded font-medium hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? "Placing Order..." : "Place Order"}
-                </button>
-                <p className="text-sm text-gray-500 mt-3 text-center">
-                  Order will be sent to distributor for processing
-                </p>
               </div>
-            </div>
+              <button
+                onClick={handleCheckout}
+                disabled={loading || cart.length === 0}
+                className="w-full mt-6 bg-green-500 text-white py-4 px-4 rounded-xl font-bold text-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+              >
+                {loading ? "Placing Order..." : "Place Order"}
+              </button>
+              <p className="text-sm text-gray-500 mt-3 text-center">
+                Order will be sent to distributor for processing
+              </p>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
   )
 }
