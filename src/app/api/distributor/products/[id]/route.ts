@@ -34,6 +34,7 @@ export async function PUT(
       data: {
         name,
         price: parseFloat(price),
+        stock: 999999, // Temporary: unlimited stock
         description,
         image
       }

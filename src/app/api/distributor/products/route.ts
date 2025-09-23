@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         price: parseFloat(price),
+        stock: 999999, // Temporary: unlimited stock until schema migration
         description,
         image,
         distributorId: session.user.id

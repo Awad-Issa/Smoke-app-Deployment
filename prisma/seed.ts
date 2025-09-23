@@ -70,28 +70,28 @@ async function main() {
     {
       name: 'Premium Cigarettes Pack',
       price: 12.50,
-      stock: 100,
+      stock: 999999,
       description: 'High quality premium cigarettes',
       distributorId: distributor.id
     },
     {
       name: 'Classic Cigarettes Pack',
       price: 8.75,
-      stock: 150,
+      stock: 999999,
       description: 'Classic cigarettes for everyday use',
       distributorId: distributor.id
     },
     {
       name: 'Light Cigarettes Pack',
       price: 9.25,
-      stock: 80,
+      stock: 999999,
       description: 'Light cigarettes with reduced tar',
       distributorId: distributor.id
     },
     {
       name: 'Menthol Cigarettes Pack',
       price: 10.00,
-      stock: 120,
+      stock: 999999,
       description: 'Refreshing menthol cigarettes',
       distributorId: distributor.id
     }
