@@ -9,7 +9,6 @@ interface CartItem {
   name: string
   price: number
   quantity: number
-  stock: number
 }
 
 export default function CartPage() {
@@ -45,11 +44,6 @@ export default function CartPage() {
       return
     }
 
-    const item = cart.find(item => item.productId === productId)
-    if (item && quantity > item.stock) {
-      alert("Cannot add more items than available stock")
-      return
-    }
 
     const newCart = cart.map(item =>
       item.productId === productId
@@ -187,8 +181,7 @@ export default function CartPage() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
                     <h3 className="font-bold text-lg text-gray-900 mb-1">{item.name}</h3>
-                    <p className="text-2xl font-bold text-green-600">${item.price.toFixed(2)}</p>
-                    <p className="text-sm text-gray-500">Stock: {item.stock}</p>
+                    <p className="text-2xl font-bold text-green-600">₪{item.price.toFixed(2)}</p>
                   </div>
                   <button
                     onClick={() => removeFromCart(item.productId)}
@@ -212,15 +205,14 @@ export default function CartPage() {
                     <span className="font-bold text-lg text-gray-900 min-w-[2rem] text-center">{item.quantity}</span>
                     <button
                       onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                      className="bg-white text-gray-700 w-10 h-10 rounded-xl hover:bg-gray-100 transition-all shadow-sm font-semibold disabled:opacity-50"
-                      disabled={item.quantity >= item.stock}
+                      className="bg-white text-gray-700 w-10 h-10 rounded-xl hover:bg-gray-100 transition-all shadow-sm font-semibold"
                     >
                       +
                     </button>
                   </div>
                   <div className="text-right">
                     <div className="text-sm text-gray-500">Total</div>
-                    <div className="font-bold text-lg text-gray-900">${(item.price * item.quantity).toFixed(2)}</div>
+                    <div className="font-bold text-lg text-gray-900">₪{(item.price * item.quantity).toFixed(2)}</div>
                   </div>
                 </div>
               </div>
@@ -234,7 +226,7 @@ export default function CartPage() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Items ({getTotalItems()})</span>
-                  <span className="font-semibold">${getTotalPrice().toFixed(2)}</span>
+                  <span className="font-semibold">₪{getTotalPrice().toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
@@ -243,7 +235,7 @@ export default function CartPage() {
                 <div className="border-t pt-3">
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span className="text-green-600">${getTotalPrice().toFixed(2)}</span>
+                    <span className="text-green-600">₪{getTotalPrice().toFixed(2)}</span>
                   </div>
                 </div>
               </div>

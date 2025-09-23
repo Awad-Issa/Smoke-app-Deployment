@@ -177,7 +177,7 @@ export default function SupermarketDetailPage() {
         </div>
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="text-2xl font-bold text-green-600">
-            ${statistics.totalRevenue.toFixed(2)}
+            ₪{statistics.totalRevenue.toFixed(2)}
           </div>
           <div className="text-sm text-gray-600">Total Revenue</div>
         </div>
@@ -189,7 +189,7 @@ export default function SupermarketDetailPage() {
         </div>
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="text-2xl font-bold text-orange-600">
-            ${statistics.averageOrderValue.toFixed(2)}
+            ₪{statistics.averageOrderValue.toFixed(2)}
           </div>
           <div className="text-sm text-gray-600">Avg Order Value</div>
         </div>
@@ -257,7 +257,7 @@ export default function SupermarketDetailPage() {
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-bold text-green-600">
-                      ${order.total.toFixed(2)}
+                      ₪{order.total.toFixed(2)}
                     </div>
                     <div className="flex items-center space-x-2">
                       <span
@@ -315,10 +315,10 @@ export default function SupermarketDetailPage() {
                         </div>
                         <div className="text-right">
                           <div className="font-medium">
-                            {item.quantity} × ${item.price.toFixed(2)}
+                            {item.quantity} × ₪{item.price.toFixed(2)}
                           </div>
                           <div className="text-sm text-gray-600">
-                            = ${(item.quantity * item.price).toFixed(2)}
+                            = ₪{(item.quantity * item.price).toFixed(2)}
                           </div>
                         </div>
                       </div>

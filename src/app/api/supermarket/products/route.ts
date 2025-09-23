@@ -11,11 +11,6 @@ export async function GET() {
 
     // Get all products from all distributors
     const products = await prisma.product.findMany({
-      where: {
-        stock: {
-          gt: 0 // Only show products with stock
-        }
-      },
       orderBy: {
         createdAt: "desc"
       }

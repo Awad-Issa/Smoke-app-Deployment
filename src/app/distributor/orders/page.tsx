@@ -195,7 +195,7 @@ export default function DistributorOrdersPage() {
                       <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(order.status)}`}>
                         {order.status}
                       </span>
-                      <p className="text-xl font-bold text-green-600 mt-1">${order.total.toFixed(2)}</p>
+                      <p className="text-xl font-bold text-green-600 mt-1">₪{order.total.toFixed(2)}</p>
                     </div>
                   </div>
                   
@@ -225,8 +225,8 @@ export default function DistributorOrdersPage() {
                                 )}
                               </div>
                               <div className="text-right ml-4">
-                                <p className="font-semibold">{item.quantity}x ${item.price.toFixed(2)}</p>
-                                <p className="text-sm text-gray-600">${(item.quantity * item.price).toFixed(2)}</p>
+                                <p className="font-semibold">{item.quantity}x ₪{item.price.toFixed(2)}</p>
+                                <p className="text-sm text-gray-600">₪{(item.quantity * item.price).toFixed(2)}</p>
                               </div>
                             </div>
                           </div>
@@ -237,7 +237,7 @@ export default function DistributorOrdersPage() {
                       <div className="bg-white rounded-xl p-3 mb-4">
                         <div className="flex justify-between font-bold text-lg">
                           <span>Total Amount</span>
-                          <span className="text-green-600">${order.total.toFixed(2)}</span>
+                          <span className="text-green-600">₪{order.total.toFixed(2)}</span>
                         </div>
                       </div>
 

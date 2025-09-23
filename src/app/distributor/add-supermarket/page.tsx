@@ -127,7 +127,7 @@ export default function AddSupermarketPage() {
                 value={formData.contactPhone}
                 onChange={(e) => setFormData({...formData, contactPhone: e.target.value})}
                 className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500"
-                placeholder="+1 (555) 123-4567"
+                placeholder="059-123-4567"
               />
             </div>
 

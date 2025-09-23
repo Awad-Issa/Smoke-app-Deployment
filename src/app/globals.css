@@ -51,6 +51,9 @@ select {
   line-height: 1.5 !important;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
   box-shadow: 0 1px 3px var(--shadow) !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 input:focus, 

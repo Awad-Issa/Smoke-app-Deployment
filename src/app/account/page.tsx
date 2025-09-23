@@ -290,7 +290,7 @@ export default function AccountPage() {
                           Order #{order.id.slice(-8)}
                         </div>
                         <div className="text-sm text-gray-600">
-                          {order.itemCount} items • ${order.total.toFixed(2)}
+                          {order.itemCount} items • ₪{order.total.toFixed(2)}
                         </div>
                         <div className="text-xs text-gray-500 mt-1">
                           {new Date(order.createdAt).toLocaleDateString('en-US', {
@@ -372,7 +372,7 @@ export default function AccountPage() {
               
               <div className="text-center pt-2 border-t border-blue-200">
                 <div className="text-2xl font-bold text-purple-600">
-                  ${accountInfo.statistics.totalValue.toFixed(2)}
+                  ₪{accountInfo.statistics.totalValue.toFixed(2)}
                 </div>
                 <div className="text-sm text-purple-600 font-medium">Total Spent</div>
               </div>

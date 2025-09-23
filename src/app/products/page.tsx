@@ -8,8 +8,6 @@ interface Product {
   id: string
   name: string
   price: number
-  stock: number
-  description?: string
   image?: string
   distributorId: string
 }
@@ -19,7 +17,6 @@ interface CartItem {
   name: string
   price: number
   quantity: number
-  stock: number
 }
 
 export default function ProductsPage() {
@@ -90,12 +87,8 @@ export default function ProductsPage() {
     const existingItem = cart.find(item => item.productId === product.id)
     
     if (existingItem) {
-      if (existingItem.quantity >= product.stock) {
-        alert("Cannot add more items than available stock")
-        return
-      }
       const newCart = cart.map(item =>
-        item.productId === product.id
+        item.productId === product.id 
           ? { ...item, quantity: item.quantity + 1 }
           : item
       )
@@ -105,8 +98,7 @@ export default function ProductsPage() {
         productId: product.id,
         name: product.name,
         price: product.price,
-        quantity: 1,
-        stock: product.stock
+        quantity: 1
       }]
       saveCart(newCart)
     }
@@ -123,11 +115,6 @@ export default function ProductsPage() {
       return
     }
 
-    const product = products.find(p => p.id === productId)
-    if (product && quantity > product.stock) {
-      alert("Cannot add more items than available stock")
-      return
-    }
 
     const newCart = cart.map(item =>
       item.productId === productId
@@ -215,7 +202,7 @@ export default function ProductsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-semibold text-blue-900">{getTotalItems()} items in cart</p>
-                <p className="text-blue-700 text-sm">${getTotalPrice().toFixed(2)} total</p>
+                <p className="text-blue-700 text-sm">₪{getTotalPrice().toFixed(2)} total</p>
               </div>
               <button
                 onClick={() => router.push("/cart")}
@@ -244,29 +231,18 @@ export default function ProductsPage() {
                         (e.target as HTMLImageElement).style.display = 'none'
                       }}
                     />
-                    {product.stock === 0 && (
-                      <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                        <span className="text-white font-semibold bg-red-600 px-3 py-1 rounded-full">Out of Stock</span>
-                      </div>
-                    )}
                   </div>
                 )}
                 
                 {/* Product Info */}
                 <div className="p-4">
                   <h3 className="font-bold text-lg text-gray-900 mb-1 line-clamp-2">{product.name}</h3>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                    {product.description || "No description available"}
-                  </p>
+    
                   
-                  {/* Price and Stock */}
-                  <div className="flex items-center justify-between mb-4">
+                  {/* Price */}
+                  <div className="mb-4">
                     <div className="text-2xl font-bold text-green-600">
-                      ${product.price.toFixed(2)}
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-gray-500">Stock</div>
-                      <div className="font-semibold text-gray-700">{product.stock}</div>
+                      ₪{product.price.toFixed(2)}
                     </div>
                   </div>
                   
@@ -284,8 +260,7 @@ export default function ProductsPage() {
                         <span className="font-bold text-lg text-gray-900 min-w-[2rem] text-center">{cartQuantity}</span>
                         <button
                           onClick={() => updateQuantity(product.id, cartQuantity + 1)}
-                          className="bg-white text-gray-700 w-10 h-10 rounded-xl hover:bg-gray-100 transition-all shadow-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                          disabled={cartQuantity >= product.stock}
+                          className="bg-white text-gray-700 w-10 h-10 rounded-xl hover:bg-gray-100 transition-all shadow-sm font-semibold"
                         >
                           +
                         </button>
@@ -301,14 +276,9 @@ export default function ProductsPage() {
                   ) : (
                     <button
                       onClick={() => addToCart(product)}
-                      disabled={product.stock === 0}
-                      className={`w-full py-3 px-4 rounded-xl font-semibold text-base transition-all ${
-                        product.stock === 0
-                          ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                          : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-                      }`}
+                      className="w-full py-3 px-4 rounded-xl font-semibold text-base transition-all bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                     >
-                      {product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                      Add to Cart
                     </button>
                   )}
                 </div>
@@ -344,7 +314,7 @@ export default function ProductsPage() {
             onClick={() => router.push("/cart")}
             className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-4 rounded-2xl font-bold text-lg shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1"
           >
-            View Cart • {getTotalItems()} items • ${getTotalPrice().toFixed(2)}
+            View Cart • {getTotalItems()} items • ₪{getTotalPrice().toFixed(2)}
           </button>
         </div>
       )}

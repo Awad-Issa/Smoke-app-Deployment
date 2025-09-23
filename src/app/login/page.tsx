@@ -62,24 +62,24 @@ function LoginPageContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 px-4 py-8">
-      <div className="w-full max-w-sm mx-auto">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="w-full max-w-sm mx-auto min-w-0">
         {/* Logo/Brand Section */}
-        <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="mx-auto w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 shadow-lg">
+            <svg className="w-7 h-7 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Smoke Platform</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Smoke Platform</h1>
           <p className="text-gray-600 text-sm">Sign in to your account</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-4 sm:p-6 overflow-hidden">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
             {/* Email Input */}
-            <div>
+            <div className="min-w-0">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
               </label>
@@ -88,7 +88,7 @@ function LoginPageContent() {
                 name="email"
                 type="email"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-base"
+                className="w-full min-w-0 px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base bg-gray-50 focus:bg-white box-border"
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -96,7 +96,7 @@ function LoginPageContent() {
             </div>
 
             {/* Password Input */}
-            <div>
+            <div className="min-w-0">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
@@ -105,7 +105,7 @@ function LoginPageContent() {
                 name="password"
                 type="password"
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-base"
+                className="w-full min-w-0 px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base bg-gray-50 focus:bg-white box-border"
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -123,7 +123,7 @@ function LoginPageContent() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:-translate-y-0.5"
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2.5 sm:py-3 px-4 rounded-xl font-semibold text-base shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:-translate-y-0.5 active:transform-none"
             >
               {loading ? (
                 <div className="flex items-center justify-center">
@@ -136,25 +136,12 @@ function LoginPageContent() {
             </button>
           </form>
 
-          {/* Register Link */}
-          <div className="mt-6 pt-6 border-t border-gray-100 text-center">
-            <p className="text-gray-600 text-sm">
-              New supermarket?{" "}
-              <button
-                onClick={() => router.push("/register-supermarket")}
-                className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-colors"
-              >
-                Request to join platform
-              </button>
-            </p>
-          </div>
+
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-8">
-          <p className="text-gray-500 text-xs">
-            Secure wholesale platform for smoke products
-          </p>
+        <div className="text-center mt-6 sm:mt-8">
+  
         </div>
       </div>
     </div>

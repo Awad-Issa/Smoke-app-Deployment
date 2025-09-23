@@ -217,7 +217,7 @@ function OrdersPageContent() {
                       <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(order.status || 'PENDING')}`}>
                         {order.status || 'PENDING'}
                       </span>
-                      <p className="text-xl font-bold text-green-600 mt-1">${(order.total || 0).toFixed(2)}</p>
+                      <p className="text-xl font-bold text-green-600 mt-1">₪{(order.total || 0).toFixed(2)}</p>
                     </div>
                   </div>
                   
@@ -244,8 +244,8 @@ function OrdersPageContent() {
                               )}
                             </div>
                             <div className="text-right ml-4">
-                              <p className="font-semibold">{item.quantity || 0}x ${(item.price || 0).toFixed(2)}</p>
-                              <p className="text-sm text-gray-600">${((item.quantity || 0) * (item.price || 0)).toFixed(2)}</p>
+                              <p className="font-semibold">{item.quantity || 0}x ₪{(item.price || 0).toFixed(2)}</p>
+                              <p className="text-sm text-gray-600">₪{((item.quantity || 0) * (item.price || 0)).toFixed(2)}</p>
                             </div>
                           </div>
                         </div>

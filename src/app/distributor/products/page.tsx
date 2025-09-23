@@ -8,7 +8,6 @@ interface Product {
   id: string
   name: string
   price: number
-  stock: number
   description?: string
   image?: string
   createdAt: string
@@ -23,7 +22,6 @@ export default function DistributorProductsPage() {
   const [formData, setFormData] = useState({
     name: "",
     price: "",
-    stock: "",
     description: "",
     image: ""
   })
@@ -82,7 +80,6 @@ export default function DistributorProductsPage() {
         body: JSON.stringify({
           name: formData.name,
           price: parseFloat(formData.price),
-          stock: parseInt(formData.stock),
           description: formData.description,
           image: formData.image
         })
@@ -102,7 +99,6 @@ export default function DistributorProductsPage() {
     setFormData({
       name: product.name,
       price: product.price.toString(),
-      stock: product.stock.toString(),
       description: product.description || "",
       image: product.image || ""
     })
@@ -126,7 +122,7 @@ export default function DistributorProductsPage() {
   }
 
   const resetForm = () => {
-    setFormData({ name: "", price: "", stock: "", description: "", image: "" })
+    setFormData({ name: "", price: "", description: "", image: "" })
     setEditingProduct(null)
     setShowAddForm(false)
   }
@@ -186,94 +182,67 @@ export default function DistributorProductsPage() {
       <div className="px-4 py-4">
 
         {showAddForm && (
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 mb-4">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-4 overflow-hidden">
             <h2 className="text-xl font-bold text-gray-900 mb-4">
               {editingProduct ? "✏️ Edit Product" : "➕ Add New Product"}
             </h2>
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-4 mb-4">
-              <div>
-                <label className="block text-gray-700 text-sm font-semibold mb-2">
-                  📦 Product Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter product name"
-                  required
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
+            <form onSubmit={handleSubmit} className="w-full">
+              <div className="space-y-4 mb-4 w-full">
+                <div className="w-full">
                   <label className="block text-gray-700 text-sm font-semibold mb-2">
-                    💰 Price ($)
+                    📦 Product Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter product name"
+                    required
+                  />
+                </div>
+                
+                <div className="w-full">
+                  <label className="block text-gray-700 text-sm font-semibold mb-2">
+                    💰 Price (₪)
                   </label>
                   <input
                     type="number"
                     step="0.01"
                     value={formData.price}
                     onChange={(e) => setFormData({...formData, price: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="0.00"
                     required
                   />
                 </div>
-                <div>
+                
+                <div className="w-full">
                   <label className="block text-gray-700 text-sm font-semibold mb-2">
-                    📊 Stock
+                    🖼️ Image URL
                   </label>
                   <input
-                    type="number"
-                    value={formData.stock}
-                    onChange={(e) => setFormData({...formData, stock: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="0"
-                    required
+                    type="url"
+                    value={formData.image}
+                    onChange={(e) => setFormData({...formData, image: e.target.value})}
+                    className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="https://example.com/image.jpg"
                   />
+                  {formData.image && (
+                    <div className="mt-3">
+                      <img 
+                        src={formData.image} 
+                        alt="Preview" 
+                        className="w-20 h-20 object-cover rounded-xl border border-gray-200"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none'
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
+                
               </div>
-              
-              <div>
-                <label className="block text-gray-700 text-sm font-semibold mb-2">
-                  🖼️ Image URL
-                </label>
-                <input
-                  type="url"
-                  value={formData.image}
-                  onChange={(e) => setFormData({...formData, image: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="https://example.com/image.jpg"
-                />
-                {formData.image && (
-                  <div className="mt-3">
-                    <img 
-                      src={formData.image} 
-                      alt="Preview" 
-                      className="w-20 h-20 object-cover rounded-xl border border-gray-200"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none'
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-              
-              <div>
-                <label className="block text-gray-700 text-sm font-semibold mb-2">
-                  📝 Description
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  rows={3}
-                  placeholder="Product description (optional)"
-                />
-              </div>
-            </div>
             <div className="flex gap-3">
               <button
                 type="submit"
@@ -312,8 +281,8 @@ export default function DistributorProductsPage() {
         ) : (
           <div className="space-y-4">
             {products.map((product) => (
-              <div key={product.id} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4">
-                <div className="flex items-start gap-4">
+              <div key={product.id} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 overflow-hidden">
+                <div className="flex items-center gap-4">
                   {/* Product Image */}
                   <div className="flex-shrink-0">
                     {product.image ? (
@@ -334,15 +303,17 @@ export default function DistributorProductsPage() {
                   
                   {/* Product Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-lg text-gray-900 truncate">{product.name}</h3>
-                        <p className="text-2xl font-bold text-green-600">${product.price.toFixed(2)}</p>
+                        <p className="text-2xl font-bold text-green-600">₪{product.price.toFixed(2)}</p>
                       </div>
-                      <div className="flex gap-2">
+                      
+                      <div className="flex gap-2 ml-4">
                         <button
                           onClick={() => handleEdit(product)}
                           className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-all"
+                          title="Edit product"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -351,28 +322,13 @@ export default function DistributorProductsPage() {
                         <button
                           onClick={() => handleDelete(product.id)}
                           className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all"
+                          title="Delete product"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                         </button>
                       </div>
-                    </div>
-                    
-                    {/* Stock and Description */}
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1">
-                          <span className="text-sm text-gray-500">📊 Stock:</span>
-                          <span className={`font-semibold text-sm ${product.stock > 10 ? 'text-green-600' : product.stock > 0 ? 'text-yellow-600' : 'text-red-600'}`}>
-                            {product.stock} units
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {product.description && (
-                        <p className="text-sm text-gray-600 line-clamp-2">{product.description}</p>
-                      )}
                     </div>
                   </div>
                 </div>

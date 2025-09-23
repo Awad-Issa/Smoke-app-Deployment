@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Items are required" }, { status: 400 })
     }
 
-    // Verify all products exist and have sufficient stock
+    // Verify all products exist
     const productIds = items.map((item: OrderItem) => item.productId)
     const products = await prisma.product.findMany({
       where: {
@@ -101,16 +101,6 @@ export async function POST(request: NextRequest) {
 
     if (products.length !== productIds.length) {
       return NextResponse.json({ error: "Some products not found" }, { status: 400 })
-    }
-
-    // Check stock availability
-    for (const item of items) {
-      const product = products.find(p => p.id === item.productId)
-      if (!product || product.stock < item.quantity) {
-        return NextResponse.json({ 
-          error: `Insufficient stock for product: ${product?.name || 'Unknown'}` 
-        }, { status: 400 })
-      }
     }
 
     // Group items by distributor
@@ -164,17 +154,6 @@ export async function POST(request: NextRequest) {
         }
       })
 
-      // Update product stock
-      for (const item of distributorItems) {
-        await prisma.product.update({
-          where: { id: item.productId },
-          data: {
-            stock: {
-              decrement: item.quantity
-            }
-          }
-        })
-      }
 
       createdOrders.push(order)
     }

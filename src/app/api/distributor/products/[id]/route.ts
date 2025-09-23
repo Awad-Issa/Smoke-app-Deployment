@@ -14,7 +14,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { name, price, stock, description, image } = await request.json()
+    const { name, price, description, image } = await request.json()
     const { id } = await params
 
     // Check if product belongs to the distributor
@@ -34,7 +34,6 @@ export async function PUT(
       data: {
         name,
         price: parseFloat(price),
-        stock: parseInt(stock),
         description,
         image
       }

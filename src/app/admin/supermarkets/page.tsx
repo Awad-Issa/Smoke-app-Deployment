@@ -362,7 +362,7 @@ export default function SupermarketsPage() {
         )}
 
         {showAddForm && (
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 mb-4">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-4">
             <h2 className="text-xl font-bold text-gray-900 mb-4">➕ Add New Supermarket</h2>
             <form onSubmit={handleAddSupermarket}>
               <div className="space-y-4 mb-4">
@@ -374,7 +374,7 @@ export default function SupermarketsPage() {
                     type="text"
                     value={newSupermarketName}
                     onChange={(e) => setNewSupermarketName(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Enter supermarket name"
                     required
                   />
@@ -387,7 +387,7 @@ export default function SupermarketsPage() {
                     type="tel"
                     value={newSupermarketPhone}
                     onChange={(e) => setNewSupermarketPhone(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="+1 (555) 123-4567"
                   />
                 </div>
@@ -541,19 +541,20 @@ export default function SupermarketsPage() {
 
       {/* Credentials Viewing Modal */}
       {showCredentialsModal && selectedSupermarketForCredentials && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-800 pr-4">
                 📋 {selectedSupermarketForCredentials.name} - Login Details
-            </h2>
+              </h2>
               <button
                 onClick={closeCredentialsModal}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
+                className="bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800 w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold transition-colors flex-shrink-0"
+                title="Close"
               >
                 ×
               </button>
-                </div>
+            </div>
                 
             {loadingCredentials ? (
               <div className="flex justify-center items-center py-8">
@@ -574,17 +575,17 @@ export default function SupermarketsPage() {
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             📧 Email Address
                           </label>
-                          <div className="flex items-center gap-2">
-                            <div className="font-mono text-sm bg-gray-50 p-2 rounded border flex-1">
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <div className="font-mono text-sm bg-gray-50 p-2 rounded border flex-1 break-all">
                               {credentialsData.user.email}
                             </div>
-                  <button
+                            <button
                               onClick={() => copyToClipboard(credentialsData.user.email, 'email')}
-                              className="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600 flex items-center gap-1 whitespace-nowrap"
+                              className="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600 flex items-center justify-center gap-1 whitespace-nowrap"
                               title="Copy email to clipboard"
-                  >
+                            >
                               📋 Copy
-                  </button>
+                            </button>
                           </div>
                         </div>
                         
@@ -597,18 +598,18 @@ export default function SupermarketsPage() {
                               <div className="text-green-800 text-sm font-semibold mb-2">
                                 🎉 New Password Generated!
                               </div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <div className="font-mono text-lg bg-white p-2 rounded border border-green-300 select-all flex-1">
+                              <div className="flex flex-col sm:flex-row gap-2 mb-2">
+                                <div className="font-mono text-lg bg-white p-2 rounded border border-green-300 select-all flex-1 break-all">
                                   {newPasswordGenerated}
                                 </div>
-                  <button
+                                <button
                                   onClick={() => copyToClipboard(newPasswordGenerated, 'password')}
-                                  className="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700 flex items-center gap-1 whitespace-nowrap"
+                                  className="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700 flex items-center justify-center gap-1 whitespace-nowrap"
                                   title="Copy password to clipboard"
                                 >
                                   📋 Copy
-                  </button>
-                </div>
+                                </button>
+                              </div>
                               <div className="text-green-700 text-xs">
                                 Password copied! Share it with the supermarket manager.
                               </div>
@@ -642,11 +643,10 @@ export default function SupermarketsPage() {
                       </div>
                     </div>
                     
-                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                    <div className="bg-gray-50 rounded-lg p-3 sm:p-4 mb-4">
                       <h4 className="font-semibold text-gray-700 mb-3">📊 Market Account Information</h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        {/* Left Column */}
-                        <div className="space-y-3">
+                      <div className="space-y-4 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Status</label>
                             <div className="flex items-center gap-2 mt-1">
@@ -664,22 +664,6 @@ export default function SupermarketsPage() {
                           </div>
 
                           <div>
-                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</label>
-                            <div className="text-sm text-gray-800 mt-1">
-                              {credentialsData.supermarket.phone || (
-                                <span className="text-gray-400 italic">Not provided</span>
-                              )}
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Market ID</label>
-                            <div className="font-mono text-sm text-gray-800 bg-white p-1 rounded border mt-1">
-                              {credentialsData.supermarket.id}
-                            </div>
-                          </div>
-
-                          <div>
                             <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">User Role</label>
                             <div className="text-sm text-gray-800 mt-1">
                               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">
@@ -689,14 +673,29 @@ export default function SupermarketsPage() {
                           </div>
                         </div>
 
-                        {/* Right Column */}
-                        <div className="space-y-3">
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</label>
+                          <div className="text-sm text-gray-800 mt-1">
+                            {credentialsData.supermarket.phone || (
+                              <span className="text-gray-400 italic">Not provided</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Market ID</label>
+                          <div className="font-mono text-xs sm:text-sm text-gray-800 bg-white p-2 rounded border mt-1 break-all">
+                            {credentialsData.supermarket.id}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Market Created</label>
                             <div className="text-sm text-gray-800 mt-1">
                               {new Date(credentialsData.supermarket.createdAt).toLocaleDateString('en-US', {
                                 year: 'numeric',
-                                month: 'long',
+                                month: 'short',
                                 day: 'numeric'
                               })}
                             </div>
@@ -710,30 +709,30 @@ export default function SupermarketsPage() {
                             <div className="text-sm text-gray-800 mt-1">
                               {new Date(credentialsData.user.createdAt).toLocaleDateString('en-US', {
                                 year: 'numeric',
-                                month: 'long',
+                                month: 'short',
                                 day: 'numeric'
                               })}
                             </div>
                             <div className="text-xs text-gray-500">
                               {new Date(credentialsData.user.createdAt).toLocaleTimeString()}
                             </div>
-                    </div>
-
-                    <div>
-                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</label>
-                            <div className="text-sm text-gray-800 mt-1">
-                              {new Date(credentialsData.user.lastUpdated).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {new Date(credentialsData.user.lastUpdated).toLocaleTimeString()}
-                            </div>
                           </div>
-                    </div>
-                  </div>
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</label>
+                          <div className="text-sm text-gray-800 mt-1">
+                            {new Date(credentialsData.user.lastUpdated).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {new Date(credentialsData.user.lastUpdated).toLocaleTimeString()}
+                          </div>
+                        </div>
+                      </div>
                   
                       {/* Status Warnings */}
                       {credentialsData.supermarket.status === "INACTIVE" && (
@@ -791,7 +790,7 @@ export default function SupermarketsPage() {
                 <div className="flex justify-end pt-4 border-t">
                   <button
                     onClick={closeCredentialsModal}
-                    className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                    className="bg-gray-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-600 transition-colors w-full sm:w-auto"
                   >
                     Close
                   </button>
@@ -809,8 +808,8 @@ export default function SupermarketsPage() {
 
       {/* New Credentials Modal - shown after creating supermarket */}
       {showNewCredentialsModal && generatedCredentials && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="text-center mb-4">
               <div className="text-4xl mb-2">🎉</div>
               <h2 className="text-xl font-bold text-green-600">
