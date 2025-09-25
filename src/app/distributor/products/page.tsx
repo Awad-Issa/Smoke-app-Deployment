@@ -22,8 +22,7 @@ export default function DistributorProductsPage() {
   const [formData, setFormData] = useState({
     name: "",
     price: "",
-    description: "",
-    image: ""
+    description: ""
   })
   const [loading, setLoading] = useState(true)
 
@@ -81,7 +80,7 @@ export default function DistributorProductsPage() {
           name: formData.name,
           price: parseFloat(formData.price),
           description: formData.description,
-          image: formData.image
+          image: ""
         })
       })
 
@@ -99,8 +98,7 @@ export default function DistributorProductsPage() {
     setFormData({
       name: product.name,
       price: product.price.toString(),
-      description: product.description || "",
-      image: product.image || ""
+      description: product.description || ""
     })
     setShowAddForm(true)
   }
@@ -122,7 +120,7 @@ export default function DistributorProductsPage() {
   }
 
   const resetForm = () => {
-    setFormData({ name: "", price: "", description: "", image: "" })
+    setFormData({ name: "", price: "", description: "" })
     setEditingProduct(null)
     setShowAddForm(false)
   }
@@ -217,30 +215,6 @@ export default function DistributorProductsPage() {
                   />
                 </div>
                 
-                <div className="w-full">
-                  <label className="block text-gray-700 text-sm font-semibold mb-2">
-                    🖼️ Image URL
-                  </label>
-                  <input
-                    type="url"
-                    value={formData.image}
-                    onChange={(e) => setFormData({...formData, image: e.target.value})}
-                    className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                  {formData.image && (
-                    <div className="mt-3">
-                      <img 
-                        src={formData.image} 
-                        alt="Preview" 
-                        className="w-20 h-20 object-cover rounded-xl border border-gray-200"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none'
-                        }}
-                      />
-                    </div>
-                  )}
-                </div>
                 
               </div>
             <div className="flex gap-3">
@@ -279,57 +253,36 @@ export default function DistributorProductsPage() {
             </button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {products.map((product) => (
-              <div key={product.id} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 overflow-hidden">
-                <div className="flex items-center gap-4">
-                  {/* Product Image */}
-                  <div className="flex-shrink-0">
-                    {product.image ? (
-                      <img 
-                        src={product.image} 
-                        alt={product.name}
-                        className="w-20 h-20 object-cover rounded-xl border border-gray-200"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHZpZXdCb3g9IjAgMCA4MCA4MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjgwIiBoZWlnaHQ9IjgwIiBmaWxsPSIjRjNGNEY2IiByeD0iMTIiLz4KPHA+8J+Tty8vcD4KPC9zdmc+'
-                        }}
-                      />
-                    ) : (
-                      <div className="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center border border-gray-200">
-                        <span className="text-gray-400 text-2xl">📦</span>
-                      </div>
-                    )}
+              <div key={product.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 overflow-hidden">
+                <div className="flex flex-col">
+                  {/* Product Info */}
+                  <div className="flex-1 mb-3">
+                    <h3 className="font-semibold text-lg text-gray-900 truncate mb-2">{product.name}</h3>
+                    <p className="text-xl font-bold text-green-600">₪{product.price.toFixed(2)}</p>
                   </div>
                   
-                  {/* Product Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-lg text-gray-900 truncate">{product.name}</h3>
-                        <p className="text-2xl font-bold text-green-600">₪{product.price.toFixed(2)}</p>
-                      </div>
-                      
-                      <div className="flex gap-2 ml-4">
-                        <button
-                          onClick={() => handleEdit(product)}
-                          className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-xl transition-all"
-                          title="Edit product"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product.id)}
-                          className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all"
-                          title="Delete product"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
+                  {/* Action buttons */}
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      onClick={() => handleEdit(product)}
+                      className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all"
+                      title="Edit product"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleDelete(product.id)}
+                      className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
+                      title="Delete product"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
